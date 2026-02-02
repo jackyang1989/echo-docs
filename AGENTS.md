@@ -1,0 +1,2255 @@
+## 🤖 AI Agent 基本规则
+（Fundamental Rules）
+
+重要约束（必须严格遵守）：
+
+本项目是长期运营的 IM / 协议 / 状态一致性系统（类似 Telegram）。
+所有方案必须以【长期可维护性、状态正确性、可验证一致性】为最高优先级。
+
+明确禁止以下行为：
+- 临时性 workaround
+- “先兼容 / 先跳过 / 以后再补”
+- mock / fake data / assume correct
+- 为了跑通而牺牲一致性或正确性
+- 任何会产生技术债、状态腐烂或不可回放的问题
+
+硬性原则：
+1. 必须保证：正确性 > 完整性 > 性能 > 开发速度
+2. 所有状态（pts/qts/seq/update 等）必须从 Day 1 就具备严格一致性模型
+3. 所有设计必须：
+   - 可以被测试验证
+   - 可以被新人维护
+   - 不依赖隐性约定或人工兜底
+4. 如果某问题在当前阶段无法被“正确解决”，
+   必须明确指出不可行性，并给出长期正确解法路径，
+   而不是提供临时替代方案。
+
+任何“短期可用但长期必然崩溃”的方案，一律视为错误答案。
+
+
+### 语言要求
+
+**所有 AI Agent 必须使用中文与用户沟通。**
+
+- ✅ 所有回复、说明、文档都使用中文
+- ✅ 代码注释可以使用英文（遵循代码规范）
+- ✅ 技术术语可以保留英文（如：IM、API、gRPC）
+- ❌ 禁止使用英文回复用户问题
+
+### 客户端与服务端责任划分
+
+**echo-android-client 是 Telegram 官方开源的最新版源码**
+
+#### 客户端（echo-android-client）
+
+- ✅ **基于 Telegram 官方最新版源码**
+- ✅ **功能完整、稳定、经过充分测试**
+- ✅ **只允许修改配置相关代码**（服务器地址、API ID、包名等）
+- ❌ **禁止修改业务逻辑代码**
+- ❌ **禁止"修复"客户端功能问题**
+
+#### 服务端（echo-server）
+
+- ✅ **100% 自研业务层**（Auth/User/Message/Sync 服务）
+- ✅ **复用 Teamgram Gateway**（仅用于 MTProto 协议处理）
+- ✅ **基于精简版执行方案**（Week 1-2 已完成 Gateway 和登录模块）
+- ✅ **所有功能问题优先排查服务端**
+- ✅ **允许修改服务端代码修复 bug**
+
+#### 参考项目（echo-server-source）
+
+- ⚠️ **Teamgram 原始代码**（仅供参考，不直接使用）
+- ⚠️ **基于 Teamgram v9（较旧版本）**
+- ℹ️ **用途**：理解 MTProto 实现、参考数据库设计
+
+### 问题诊断原则
+
+**当出现功能问题时，遵循以下诊断顺序：**
+
+1. **首先排查服务端**
+   - 检查服务端日志（BFF、MSG、Sync）
+   - 检查数据库状态
+   - 检查服务端代码逻辑
+
+2. **其次检查配置**
+   - 客户端配置（服务器地址、端口）
+   - 服务端配置（数据库、Redis、Kafka）
+   - 网络配置（防火墙、端口转发）
+
+3. **最后才考虑客户端**
+   - 仅限于配置问题
+   - 不修改业务逻辑
+
+### 典型案例
+
+#### ✅ 正确的问题诊断
+
+**问题**: 用户发送消息后，对方收不到
+
+**诊断流程**:
+1. 检查服务端 MSG 服务日志 → 发现消息处理失败
+2. 检查服务端代码 → 发现 bug
+3. 修复服务端代码 → 问题解决
+
+#### ❌ 错误的问题诊断
+
+**问题**: 用户发送消息后，对方收不到
+
+**错误做法**:
+1. ❌ 认为是客户端问题
+2. ❌ 修改客户端消息发送逻辑
+3. ❌ 导致客户端代码被污染，无法升级
+
+### 客户端代码保护规则
+
+**echo-android-client 源码保护规则**:
+
+1. **禁止修改业务逻辑**
+   - ❌ 禁止修改消息发送/接收逻辑
+   - ❌ 禁止修改 UI 交互逻辑
+   - ❌ 禁止修改数据存储逻辑
+   - ❌ 禁止"修复"功能 bug
+
+2. **允许修改配置**
+   - ✅ 服务器地址和端口
+   - ✅ API ID 和 API Hash
+   - ✅ 包名和应用名称
+   - ✅ 品牌相关资源（图标、颜色）
+
+3. **遇到功能问题时**
+   - ✅ 记录问题现象
+   - ✅ 排查服务端原因
+   - ✅ 修复服务端代码
+   - ❌ 不修改客户端代码
+
+### 为什么这样做？
+
+1. **Telegram 官方客户端经过充分测试**
+   - 数百万用户验证
+   - 功能稳定可靠
+   - 修改会引入新 bug
+
+2. **Teamgram 服务端版本较旧**
+   - 基于 Telegram v9（较旧）
+   - 功能不完整
+   - 存在已知 bug
+
+3. **保持客户端可升级性**
+   - 不修改业务逻辑
+   - 可以随时合并 Telegram 官方更新
+   - 降低维护成本
+
+---
+
+## 🌐 项目定位与设计意图（Architectural Intent）
+
+Echo 不是一个“内容驱动”的社交平台。
+
+Echo 解决的核心问题不是“发声”，而是 **“连接（Link）”**。
+
+### Echo 的核心定位
+
+- Echo 是 **IM 优先（IM-first）** 的系统
+- 一切关系的建立、维系、沉淀，都应围绕「一对一 / 群聊 / 私密连接」展开
+- Echo 的核心价值是：  
+  **让人更容易建立真实、可控、可退出的连接**
+
+### Echo 与传统社交平台的本质区别
+
+| 平台类型 | 核心驱动力 |
+|--------|----------|
+| X / 微博 | 内容传播 |
+| 抖音 / 推荐流 | 算法分发 |
+| Reddit / 论坛 | 话题聚合 |
+| **Echo** | **人与人之间的连接** |
+
+Echo 中：
+- IM 是 **系统的心脏**
+- 广场 / Square 只是 **连接的入口**
+- 推荐只是 **连接的辅助**
+- 内容本身 **不是目标**
+
+### 关于「Telegram + X（广场）」的正确理解
+
+Echo 借鉴：
+- Telegram 的 **IM 架构与体验**
+- X 的 **弱连接发现与信息流形式**
+
+但 **不复制 X 的“内容至上”逻辑**。
+
+Echo 的广场设计目标是：
+- 帮助用户 **发现人 / 群 / 圈子**
+- 而不是最大化曝光、互动或停留时长
+
+因此：
+- 广场必须是可关闭的
+- 推荐必须是可降级的
+- 任何业务模块都不应影响 IM 核心链路
+
+### 设计底线（Intent → Rule）
+
+以下不是“偏好”，而是**设计必然结果**：
+
+- IM Core 必须保持极度纯净
+- 非 IM 功能必须旁路化
+- 所有新增能力必须可关闭、可回滚
+- 宁可牺牲增长效率，也不牺牲连接质量
+
+**Echo 宁愿是一个小而稳定的连接网络，  
+也不成为一个内容喧哗但关系脆弱的平台。**
+
+
+
+
+# Echo 项目品牌命名规则文档
+
+---
+
+## ⚠️ AI Agent 必读 - 强制执行规则
+
+禁止修改任何 Java / C++ 源码
+禁止补方法、补桩、注释调用、接口适配
+echo-android-client源码不允许被“修复”
+只允许删除 → 拷贝Telegram-master代码 → 编译 → 原样报错
+
+
+**🔴 在开始任何工作前，必须先运行以下命令：**
+
+```bash
+./tools/validate-agents-compliance.sh
+```
+
+**如果检查失败，必须先修复问题，再继续工作！**
+
+**📋 快速检查清单**:
+- [ ] 运行合规性检查工具 `./tools/validate-agents-compliance.sh`
+- [ ] 运行品牌命名检查 `./check-branding.sh`
+- [ ] 查阅 AGENTS.md 相关章节
+- [ ] 查阅核心文档索引 `docs/core/README.md`
+
+**📚 详细强制执行机制**: 
+- [ECHO_AI_AGENT_ENFORCEMENT.md](./ECHO_AI_AGENT_ENFORCEMENT.md) - 强制执行机制详解
+- [ECHO_ENFORCEMENT_SUMMARY.md](./ECHO_ENFORCEMENT_SUMMARY.md) - 实施总结
+- [强制执行机制与工具](#-强制执行机制与工具enforcement-mechanisms) - 本文档中的工具索引章节
+
+---
+
+## 📋 文档目的
+
+本文档定义了 Echo 项目的所有品牌命名规则，确保在代码、文档、配置文件中使用统一、正确的命名。
+
+**重要**: 所有 AI Agent、开发者、文档编写者在处理本项目时，必须严格遵守本规则。
+
+---
+
+## 🎯 核心品牌名称
+
+### 主品牌名称：Echo
+
+**正确用法**：
+- Echo (首字母大写，用于产品展示、UI、文档)
+- echo (全小写，用于代码包名、内部系统名)
+
+### Android 身份标识规范 (Hard Rule)
+
+为了确保全球唯一性、品牌保护及规避合规风险，Android 客户端必须严格遵守以下命名：
+
+- **核心包名 (Root Package)**: `com.echo.messenger`
+- **调试/Beta版后缀**: `.beta` (即 `com.echo.messenger.beta`)（可选，用于 Debug 版本）
+- **Web/变体版后缀**: `.web`（用于 Standalone 版本）
+
+**🚫 严格禁止使用以下包名**: 
+1. `org.telegram.*` (上游 Telegram 原始包名，存在严重合规与干扰风险)
+2. `com.iecho.*` (已废弃，存在 JNI 包名不匹配问题，参见 ECHO-BUG-008)
+
+**✅ 正确的包名策略**：
+- **业务逻辑层**: `com.echo.messenger`
+- **UI 层**: `com.echo.ui`
+- **底层库（tgnet）**: `com.echo.tgnet`
+- **底层库（SQLite）**: `com.echo.SQLite`
+- **VoIP 模块**: `com.echo.messenger.voip`
+
+**关键原则**：
+- ✅ **统一使用 `com.echo`**（不使用 `com.iecho`）
+- ✅ **Java 包名和 JNI 路径必须完全一致**
+- ✅ **底层库（tgnet、SQLite）保持独立包名**
+
+---
+
+## 🛠️ 代码结构命名规则 
+Echo Messenger - 产品描述
+
+**错误用法**：
+- ❌ Vibe - 已废弃的旧品牌名（已完全清理）
+- ❌ Teamgram / teamgram / TEAMGRAM - 上游服务端原名，必须替换为 Echo / echo / ECHO
+- ❌ Telegram - 必须替换为 Echo（合规性要求）
+- ❌ ECHO（全大写，除非是常量名）
+
+**品牌替换规则**：
+- `Teamgram` → `Echo` (首字母大写，用于类名、文档标题)
+- `teamgram` → `echo` (全小写，用于包名、变量名)
+- `TEAMGRAM` → `ECHO` (全大写，用于常量名)
+- `Telegram` → `Echo` (首字母大写)
+- `telegram` → `echo` (全小写)
+- `TELEGRAM` → `ECHO` (全大写)
+
+**已完成的品牌清理**：
+- ✅ echo-proto: 161 个文件已更新（Teamgram → Echo）
+- ✅ echo-server: 32 个文件已更新（Teamgram → Echo）
+- ✅ Vibe 相关引用已完全清理
+
+---
+
+## 📚 核心文档索引（Critical Documents Index）
+
+### 重要说明
+
+Echo 项目的核心开发文档集中存放在 `docs/core/` 目录，**严禁删除或移动**。
+
+所有 AI Agent、开发者在进行开发时，必须：
+1. ✅ 首先查阅核心文档索引
+2. ✅ 按照规范创建和更新变更记录
+3. ✅ 保护核心文档不被误删或污染
+
+---
+
+### 📁 核心文档目录结构
+
+```
+echo-server/docs/core/                 # Echo 服务端核心文档（100% 自研）
+├── README.md                          # 核心文档索引和保护规则
+├── changes/                           # 代码变更记录（最重要）
+│   ├── CHANGELOG.md                  # 变更总览
+│   ├── README.md                     # 变更记录使用指南
+│   ├── features/                     # 新增功能记录
+│   │   ├── ECHO-FEATURE-TEMPLATE.md # 功能变更模板
+│   │   └── ECHO-FEATURE-XXX-*.md    # 具体功能记录
+│   ├── bugfixes/                     # Bug 修复记录
+│   │   └── ECHO-BUG-XXX-*.md
+│   ├── optimizations/                # 性能优化记录
+│   │   └── ECHO-OPT-XXX-*.md
+│   └── merge-reports/                # 上游合并报告
+│       └── merge-teamgram-gateway-vX.X.X.md
+├── architecture/                      # 架构设计文档 ✅ 已完善
+│   ├── system-design.md             # 系统架构设计
+│   ├── module-design.md             # 模块设计文档
+│   └── api-contracts.md             # API 契约文档
+└── standards/                         # 开发规范文档 ✅ 已完善
+    ├── coding-standards.md           # 编码规范
+    ├── commit-conventions.md         # 提交规范
+    └── review-checklist.md           # 审查清单
+
+echo-android-client/docs/core/         # Android 客户端核心文档
+├── README.md                          # 核心文档索引和保护规则
+├── changes/                           # 代码变更记录（最重要）
+│   ├── CHANGELOG.md                  # 变更总览
+│   ├── README.md                     # 变更记录使用指南
+│   ├── features/                     # 新增功能记录
+│   │   ├── ECHO-FEATURE-TEMPLATE.md # 功能变更模板
+│   │   └── ECHO-FEATURE-XXX-*.md    # 具体功能记录
+│   ├── bugfixes/                     # Bug 修复记录
+│   │   └── ECHO-BUG-XXX-*.md
+│   ├── optimizations/                # 性能优化记录
+│   │   └── ECHO-OPT-XXX-*.md
+│   └── merge-reports/                # 上游合并报告
+│       └── merge-telegram-vX.X.X.md
+├── architecture/                      # 架构设计文档 ✅ 已完善
+│   ├── system-design.md             # 系统架构设计
+│   ├── module-design.md             # 模块设计文档
+│   └── ui-components.md             # UI 组件设计
+└── standards/                         # 开发规范文档 ⏳ 待完善
+    ├── coding-standards.md           # 编码规范（Java/Kotlin）
+    ├── commit-conventions.md         # 提交规范
+    └── review-checklist.md           # 审查清单
+```
+
+---
+
+### 🔴 核心文档快速索引
+
+#### Echo 服务端 (echo-server)
+
+**重要说明**：echo-server 是 100% 自研的服务端，只复用 Teamgram Gateway 处理 MTProto 协议。
+
+| 文档类型 | 路径 | 说明 | 重要性 |
+|---------|------|------|--------|
+| 核心文档索引 | `echo-server/docs/core/README.md` | 核心文档目录说明和保护规则 | 🔴 必读 |
+| 变更总览 | `echo-server/docs/core/changes/CHANGELOG.md` | 所有变更的时间线和版本历史 | 🔴 必读 |
+| 变更记录指南 | `echo-server/docs/core/changes/README.md` | 如何创建和维护变更记录 | 🔴 必读 |
+| 功能变更模板 | `echo-server/docs/core/changes/features/ECHO-FEATURE-TEMPLATE.md` | 新功能变更记录模板 | 🔴 必用 |
+| 功能变更记录 | `echo-server/docs/core/changes/features/ECHO-FEATURE-XXX-*.md` | 具体功能的详细记录 | 🔴 核心资产 |
+| Bug 修复记录 | `echo-server/docs/core/changes/bugfixes/ECHO-BUG-XXX-*.md` | Bug 修复的详细记录 | 🔴 核心资产 |
+| 优化记录 | `echo-server/docs/core/changes/optimizations/ECHO-OPT-XXX-*.md` | 性能优化的详细记录 | 🔴 核心资产 |
+| 上游合并报告 | `echo-server/docs/core/changes/merge-reports/merge-teamgram-gateway-vX.X.X.md` | Teamgram Gateway 更新合并报告 | 🔴 核心资产 |
+| **架构设计** | `echo-server/docs/core/architecture/` | **架构设计文档** | **🔴 核心资产** |
+| 系统架构设计 | `echo-server/docs/core/architecture/system-design.md` | 自研架构、数据流转、服务通信 | 🔴 必读 |
+| 模块设计文档 | `echo-server/docs/core/architecture/module-design.md` | 模块职责、依赖关系、扩展指南 | 🔴 必读 |
+| API 契约文档 | `echo-server/docs/core/architecture/api-contracts.md` | 版本化策略、接口规范、错误码 | 🔴 必读 |
+| **开发规范** | `echo-server/docs/core/standards/` | **开发规范文档** | **🔴 核心资产** |
+| 编码规范 | `echo-server/docs/core/standards/coding-standards.md` | Go 代码编写规范 | 🔴 必读 |
+| 提交规范 | `echo-server/docs/core/standards/commit-conventions.md` | Git 提交消息规范 | 🔴 必读 |
+| 审查清单 | `echo-server/docs/core/standards/review-checklist.md` | PR 审查必查项（10 大类别） | 🔴 必读 |
+
+#### Teamgram 参考项目 (echo-server-source)
+
+**重要说明**：echo-server-source 是 Teamgram 原始代码，仅供参考，不直接使用。
+
+| 文档类型 | 路径 | 说明 | 重要性 |
+|---------|------|------|--------|
+| 参考文档 | `echo-server-source/docs/` | Teamgram 原始文档（仅供参考） | 🟡 参考 |
+| Gateway 源码 | `echo-server-source/app/interface/gateway/` | Gateway 实现参考 | 🟡 参考 |
+| MTProto 实现 | `echo-server-source/app/service/` | MTProto 协议实现参考 | 🟡 参考 |
+
+#### Android 客户端 (echo-android-client)
+
+| 文档类型 | 路径 | 说明 | 重要性 |
+|---------|------|------|--------|
+| 核心文档索引 | `docs/core/README.md` | 核心文档目录说明和保护规则 | 🔴 必读 |
+| 变更总览 | `docs/core/changes/CHANGELOG.md` | 所有变更的时间线和版本历史 | 🔴 必读 |
+| 变更记录指南 | `docs/core/changes/README.md` | 如何创建和维护变更记录 | 🔴 必读 |
+| 功能变更模板 | `docs/core/changes/features/ECHO-FEATURE-TEMPLATE.md` | 新功能变更记录模板 | 🔴 必用 |
+| 功能变更记录 | `docs/core/changes/features/ECHO-FEATURE-XXX-*.md` | 具体功能的详细记录 | 🔴 核心资产 |
+| Bug 修复记录 | `docs/core/changes/bugfixes/ECHO-BUG-XXX-*.md` | Bug 修复的详细记录 | 🔴 核心资产 |
+| 优化记录 | `docs/core/changes/optimizations/ECHO-OPT-XXX-*.md` | 性能优化的详细记录 | 🔴 核心资产 |
+| 上游合并报告 | `docs/core/changes/merge-reports/merge-telegram-vX.X.X.md` | Telegram 上游更新合并报告 | 🔴 核心资产 |
+| **架构设计** | `docs/core/architecture/` | **架构设计文档** | **🔴 核心资产** |
+| 系统架构设计 | `docs/core/architecture/system-design.md` | 系统架构、模块划分、数据流转 | 🔴 必读 |
+| 模块设计文档 | `docs/core/architecture/module-design.md` | 模块职责、依赖关系、扩展指南 | 🔴 必读 |
+| UI 组件设计 | `docs/core/architecture/ui-components.md` | UI 组件设计和使用规范 | 🟡 重要 |
+| **开发规范** | `docs/core/standards/` | **开发规范文档** | **🔴 核心资产** |
+| 编码规范 | `docs/core/standards/coding-standards.md` | Java/Kotlin 代码编写规范 | 🔴 必读 |
+| 提交规范 | `docs/core/standards/commit-conventions.md` | Git 提交消息规范 | 🔴 必读 |
+| 审查清单 | `docs/core/standards/review-checklist.md` | PR 审查必查项（10 大类别） | 🔴 必读 |
+
+---
+
+### 🚫 核心文档保护规则（Hard Rule）
+
+#### 1. 禁止删除核心文档
+
+❌ **严禁删除**以下文档：
+- `docs/core/` 目录下的所有文档
+- 所有 `ECHO-FEATURE-XXX-*.md` 功能记录
+- 所有 `ECHO-BUG-XXX-*.md` Bug 修复记录
+- 所有 `ECHO-OPT-XXX-*.md` 优化记录
+- 所有 `merge-*.md` 上游合并报告
+
+**原因**：即使功能被移除，变更记录也是历史资产，必须保留用于：
+- 追溯历史决策
+- 合并上游更新
+- 技术债务管理
+- 知识传承
+
+#### 2. 禁止移动核心文档
+
+❌ **严禁移动**核心文档到其他目录
+
+**原因**：
+- 文档路径在 AGENTS.md 中有明确索引
+- 移动会导致引用失效
+- 影响自动化工具的正常运行
+
+**例外**：如确需重组，必须：
+1. 更新 AGENTS.md 中的所有路径引用
+2. 更新所有文档中的相对路径
+3. 通知所有团队成员
+4. 更新自动化工具配置
+
+#### 3. 禁止混入非核心文档
+
+❌ **严禁**在 `docs/core/` 目录存放以下文档：
+- 临时文档（会议记录、临时笔记、草稿）
+- 运营文档（审计报告、运营数据、商业计划）
+- 测试报告（性能测试、压力测试、临时测试结果）
+- 部署文档（部署日志、环境配置、运维手册）
+
+**原因**：
+- 保持核心文档目录纯净
+- 避免核心文档被非核心文档淹没
+- 防止误删核心文档
+
+**正确做法**：
+- 临时文档 → 放在 `docs/temp/` 或个人目录
+- 运营文档 → 放在 `docs/operations/`
+- 测试报告 → 放在 `docs/testing/`
+- 部署文档 → 放在项目根目录或 `docs/deployment/`
+
+#### 4. 必须版本控制
+
+✅ **必须**将核心文档纳入 Git 版本控制：
+- 所有变更记录必须 commit
+- 重要变更必须有清晰的 commit message
+- 定期 push 到远程仓库备份
+
+---
+
+### 📝 AI Agent 使用核心文档的规范
+
+#### 开发前必须做的事
+
+1. **查阅变更总览**
+   ```bash
+   # Echo 服务端（100% 自研）
+   cat echo-server/docs/core/changes/CHANGELOG.md
+   
+   # Android 客户端
+   cat echo-android-client/docs/core/changes/CHANGELOG.md
+   ```
+
+2. **检查是否有类似功能**
+   ```bash
+   # 搜索相关功能记录
+   grep -r "关键词" echo-server/docs/core/changes/features/
+   ```
+
+3. **阅读变更记录指南**
+   ```bash
+   cat echo-server/docs/core/changes/README.md
+   ```
+
+#### 开发中必须做的事
+
+1. **创建变更记录**
+   ```bash
+   # 复制模板
+   cp echo-server/docs/core/changes/features/ECHO-FEATURE-TEMPLATE.md \
+      echo-server/docs/core/changes/features/ECHO-FEATURE-XXX-功能名.md
+   ```
+
+2. **实时更新变更记录**
+   - 每修改一个文件，立即更新变更记录
+   - 记录具体行号和变更内容
+   - 添加代码注释标记
+
+3. **更新 CHANGELOG.md**
+   - 在 `[Unreleased]` 章节添加条目
+   - 关联变更 ID
+
+#### 开发后必须做的事
+
+1. **完善变更记录**
+   - 确保 10 个必填项完整
+   - 添加上游兼容性分析
+   - 编写回滚计划
+
+2. **提交时引用变更 ID**
+   ```bash
+   git commit -m "feat: [ECHO-FEATURE-XXX] 添加快捷回复功能"
+   ```
+
+3. **PR 中附带变更文档链接**
+   ```markdown
+   ## 变更记录
+   
+   详见：`docs/core/changes/features/ECHO-FEATURE-XXX-quick-reply.md`
+   ```
+
+---
+
+### 🔍 快速查找核心文档
+
+#### 按功能名称查找
+```bash
+# Echo 服务端（100% 自研）
+grep -r "功能名称" echo-server/docs/core/changes/features/
+
+# Android 客户端
+grep -r "功能名称" echo-android-client/docs/core/changes/features/
+```
+
+#### 按文件路径查找
+```bash
+# 查找修改了某个文件的所有变更
+grep -r "ChatActivity.java" echo-android-client/docs/core/changes/
+```
+
+#### 按变更 ID 查找
+```bash
+# 查找特定变更的详细信息
+find . -name "ECHO-FEATURE-001-*.md"
+```
+
+#### 按日期查找
+```bash
+# 查找某个日期的所有变更
+grep -r "2026-01-30" echo-server/docs/core/changes/
+```
+
+---
+
+### 📊 核心文档统计
+
+查看核心文档统计：
+
+```bash
+# Echo 服务端统计（100% 自研）
+echo "=== Echo Server 核心文档统计 ==="
+echo "功能数量: $(ls -1 echo-server/docs/core/changes/features/ECHO-FEATURE-*.md 2>/dev/null | wc -l)"
+echo "Bug 修复: $(ls -1 echo-server/docs/core/changes/bugfixes/ECHO-BUG-*.md 2>/dev/null | wc -l)"
+echo "性能优化: $(ls -1 echo-server/docs/core/changes/optimizations/ECHO-OPT-*.md 2>/dev/null | wc -l)"
+echo "上游合并: $(ls -1 echo-server/docs/core/changes/merge-reports/merge-*.md 2>/dev/null | wc -l)"
+
+# Android 客户端统计
+echo "=== Echo Android Client 核心文档统计 ==="
+echo "功能数量: $(ls -1 echo-android-client/docs/core/changes/features/ECHO-FEATURE-*.md 2>/dev/null | wc -l)"
+echo "Bug 修复: $(ls -1 echo-android-client/docs/core/changes/bugfixes/ECHO-BUG-*.md 2>/dev/null | wc -l)"
+echo "性能优化: $(ls -1 echo-android-client/docs/core/changes/optimizations/ECHO-OPT-*.md 2>/dev/null | wc -l)"
+echo "上游合并: $(ls -1 echo-android-client/docs/core/changes/merge-reports/merge-*.md 2>/dev/null | wc -l)"
+```
+
+---
+
+## 🛡️ 强制执行机制与工具（Enforcement Mechanisms）
+
+### 重要说明
+
+Echo 项目采用**自动化强制执行机制**，确保所有 AI Agent 和开发者遵守 AGENTS.md 中定义的规则。
+
+**核心理念**：不依赖 AI 记忆，而是通过自动化工具使不合规行为无法通过。
+
+---
+
+### 📚 强制执行文档索引
+
+| 文档类型 | 路径 | 说明 | 重要性 |
+|---------|------|------|--------|
+| **强制执行机制文档** | `ECHO_AI_AGENT_ENFORCEMENT.md` | 详细的强制执行机制和哲学 | 🔴 必读 |
+| **强制执行实施总结** | `ECHO_ENFORCEMENT_SUMMARY.md` | 实施总结和快速参考 | 🔴 必读 |
+| **合规性检查工具** | `tools/validate-agents-compliance.sh` | 自动化合规性检查脚本 | 🔴 必用 |
+| **品牌命名检查工具** | `check-branding.sh` | 品牌命名合规性检查 | 🔴 必用 |
+
+---
+
+### 🔧 工具和脚本
+
+#### 1. 合规性检查工具
+
+**路径**: `tools/validate-agents-compliance.sh`
+
+**功能**:
+- 检查品牌命名合规性（vibe/teamgram/telegram 等旧名称）
+- 检查核心文档完整性（docs/core/ 目录）
+- 检查变更记录完整性（CHANGELOG.md、变更模板）
+- 检查文档索引一致性（AGENTS.md 索引与实际文件）
+- 检查文档状态标记（"待完善" vs "✅ 已完善"）
+- 检查 Git 提交消息规范
+
+**使用方法**:
+```bash
+# 运行完整检查
+./tools/validate-agents-compliance.sh
+
+# 检查特定类别
+./tools/validate-agents-compliance.sh --category branding
+./tools/validate-agents-compliance.sh --category core-docs
+```
+
+**返回值**:
+- `0` - 所有检查通过
+- `1` - 发现不合规问题（阻止 CI/CD 流程）
+
+**集成方式**:
+- Git pre-commit hook（提交前自动检查）
+- Git commit-msg hook（提交消息规范检查）
+- CI/CD pipeline（PR 合并前强制检查）
+- PR template（必填检查清单）
+
+---
+
+#### 2. 品牌命名检查工具
+
+**路径**: `check-branding.sh`
+
+**功能**:
+- 检查代码和文档中的旧品牌名称（vibe/Vibe/VIBE）
+- 检查第三方名称误用（teamgram/Teamgram/TEAMGRAM）
+- 检查 Telegram 引用（在 echo-android-client 中必须替换）
+- 排除合法引用（AGENTS.md、teamgram-android 参考项目）
+
+**使用方法**:
+```bash
+# 运行品牌命名检查
+./check-branding.sh
+
+# 检查特定目录
+./check-branding.sh echo-server-source/
+./check-branding.sh echo-android-client/
+```
+
+---
+
+#### 3. 变更记录生成工具（推荐开发）
+
+**建议路径**: `tools/create-change.sh`
+
+**功能**:
+- 自动生成变更记录文档（基于模板）
+- 自动分配唯一变更 ID
+- 自动更新 CHANGELOG.md
+- 自动创建 Git 分支
+
+**使用方法**:
+```bash
+# 创建新功能变更记录
+./tools/create-change.sh --type feature --name "Quick Reply Template"
+
+# 创建 Bug 修复记录
+./tools/create-change.sh --type bugfix --name "Fix Chat Crash"
+
+# 创建性能优化记录
+./tools/create-change.sh --type optimization --name "Improve Message Rendering"
+```
+
+---
+
+#### 4. 代码扫描工具（推荐开发）
+
+**建议路径**: `tools/scan-custom-code.sh`
+
+**功能**:
+- 扫描代码中的自定义标记（ECHO-FEATURE-XXX、ECHO-BUG-XXX）
+- 统计自定义代码块数量
+- 生成自定义代码分布报告
+- 检测未记录的代码变更
+
+**使用方法**:
+```bash
+# 扫描所有自定义代码
+./tools/scan-custom-code.sh
+
+# 扫描特定变更 ID
+./tools/scan-custom-code.sh --id ECHO-FEATURE-001
+
+# 生成报告
+./tools/scan-custom-code.sh --report
+```
+
+---
+
+#### 5. 上游更新检测工具（推荐开发）
+
+**建议路径**: `tools/check-upstream.sh`
+
+**功能**:
+- 检查 Telegram/Teamgram 上游更新
+- 分析上游变更与自定义代码的冲突风险
+- 生成上游更新报告
+- 提供合并建议
+
+**使用方法**:
+```bash
+# 检查 Telegram 上游更新
+./tools/check-upstream.sh --source telegram
+
+# 检查 Teamgram 上游更新
+./tools/check-upstream.sh --source teamgram
+
+# 生成详细报告
+./tools/check-upstream.sh --source telegram --detailed
+```
+
+---
+
+### 🚦 强制执行流程
+
+#### 开发前（Pre-Development）
+
+1. **运行合规性检查**
+   ```bash
+   ./tools/validate-agents-compliance.sh
+   ```
+
+2. **查阅核心文档**
+   - 阅读 `AGENTS.md`
+   - 查阅 `docs/core/README.md`
+   - 查阅相关变更记录
+
+3. **创建变更记录**
+   ```bash
+   ./tools/create-change.sh --type feature --name "功能名称"
+   ```
+
+---
+
+#### 开发中（During Development）
+
+1. **实时更新变更记录**
+   - 每修改一个文件，立即更新变更记录
+   - 添加代码注释标记（ECHO-XXX-XXX）
+
+2. **定期运行检查**
+   ```bash
+   # 每次提交前运行
+   ./tools/validate-agents-compliance.sh
+   ./check-branding.sh
+   ```
+
+---
+
+#### 开发后（Post-Development）
+
+1. **完善变更记录**
+   - 确保 10 个必填项完整
+   - 添加上游兼容性分析
+   - 编写回滚计划
+
+2. **运行完整检查**
+   ```bash
+   ./tools/validate-agents-compliance.sh
+   ./check-branding.sh
+   ./tools/scan-custom-code.sh
+   ```
+
+3. **提交代码**
+   ```bash
+   git add .
+   git commit -m "feat: [ECHO-FEATURE-XXX] 功能描述"
+   # Git hooks 会自动运行检查
+   ```
+
+---
+
+#### PR 审查（PR Review）
+
+1. **自动化检查**
+   - CI/CD pipeline 自动运行所有检查工具
+   - 检查失败则阻止合并
+
+2. **人工审查**
+   - 使用 `docs/core/standards/review-checklist.md`
+   - 检查变更记录完整性
+   - 验证上游兼容性分析
+
+3. **合并条件**
+   - 所有自动化检查通过
+   - 人工审查通过
+   - 变更记录完整
+
+---
+
+### 📋 快速检查清单
+
+在开始任何工作前，必须完成以下检查：
+
+- [ ] 运行 `./tools/validate-agents-compliance.sh`
+- [ ] 运行 `./check-branding.sh`
+- [ ] 查阅 `AGENTS.md` 相关章节
+- [ ] 查阅 `docs/core/README.md`
+- [ ] 查阅相关变更记录（如有）
+
+在提交代码前，必须完成以下检查：
+
+- [ ] 运行 `./tools/validate-agents-compliance.sh`
+- [ ] 运行 `./check-branding.sh`
+- [ ] 更新变更记录文档
+- [ ] 更新 `CHANGELOG.md`
+- [ ] 添加代码注释标记（ECHO-XXX-XXX）
+- [ ] 编写测试用例
+- [ ] 运行测试套件
+
+---
+
+### 🔗 相关文档链接
+
+- **强制执行机制详解**: [ECHO_AI_AGENT_ENFORCEMENT.md](./ECHO_AI_AGENT_ENFORCEMENT.md)
+- **强制执行实施总结**: [ECHO_ENFORCEMENT_SUMMARY.md](./ECHO_ENFORCEMENT_SUMMARY.md)
+- **核心文档索引**: [echo-server/docs/core/README.md](./echo-server/docs/core/README.md)
+- **变更记录指南**: [echo-server/docs/core/changes/README.md](./echo-server/docs/core/changes/README.md)
+- **审查清单**: [echo-server/docs/core/standards/review-checklist.md](./echo-server/docs/core/standards/review-checklist.md)
+
+---
+
+## 📁 命名规则详解
+
+### 1. 文档文件命名
+
+#### 规则：
+- 主文档使用 `ECHO_` 前缀
+- 全大写，单词间用下划线分隔
+- 使用 `.md` 扩展名
+
+#### 示例：
+```
+✅ 正确：
+ECHO_START_HERE.md
+ECHO_ARCHITECTURE.md
+ECHO_ADMIN_PANEL.md
+ECHO_BRANDING_GUIDE.md
+ECHO_DEPLOYMENT_CONFIG.md
+
+❌ 错误：
+VIBE_START_HERE.md          # 使用了旧品牌名
+echo_start_here.md          # 小写不符合规范
+Echo-Start-Here.md          # 使用了连字符
+EchoStartHere.md            # 驼峰命名不符合规范
+```
+
+### 2. Shell 脚本命名
+
+#### 规则：
+- 使用 `echo-` 前缀
+- 全小写，单词间用连字符分隔
+- 使用 `.sh` 扩展名
+
+#### 示例：
+```
+✅ 正确：
+echo-deploy-local-mac.sh
+echo-rebrand.sh
+deploy-echo-mac.sh
+configure-echo-client.sh
+
+❌ 错误：
+vibe-deploy.sh              # 使用了旧品牌名
+teamgram-deploy.sh          # 使用了第三方名称
+Echo-Deploy.sh              # 大写不符合规范
+echo_deploy.sh              # 使用了下划线
+```
+
+### 3. 目录命名
+
+#### 规则：
+- 服务端目录：`echo-server-source`
+- Android 客户端目录：`echo-android-client` (原 Telegram-master，已完全重命名)
+- 参考项目目录：`teamgram-android` (仅供参考，不是我们的项目)
+- 全小写，单词间用连字符分隔
+
+#### 示例：
+```
+✅ 正确：
+echo-server/                # Echo 服务端（100% 自研，只复用 Gateway）
+echo-android-client/        # Echo Android 客户端（原 Telegram-master，已完全重命名）
+echo-server-source/         # Teamgram 原始代码（仅供参考）
+teamgram-android/           # 参考项目（保持原名，仅供参考）
+
+❌ 错误：
+vibe-server/                # 使用了旧品牌名
+teamgram-server/            # 使用了第三方名称
+Telegram-master/            # 已重命名为 echo-android-client
+EchoServer/                 # 驼峰命名不符合规范
+echo_server/                # 使用了下划线
+```
+
+#### 重要说明：
+- **echo-android-client**: Echo Android 客户端（原 Telegram-master），完全重命名为 Echo
+- **teamgram-android**: 参考项目，保持原名不修改，仅供参考，不是我们要部署的
+- **echo-server**: Echo 服务端（100% 自研），只复用 Teamgram Gateway 处理 MTProto 协议
+- **echo-server-source**: Teamgram 原始代码（仅供参考），不直接使用
+
+### 4. 代码中的命名
+
+#### 4.1 Go 语言
+
+##### 包名（package）：
+```go
+✅ 正确：
+package echo
+package echoserver
+package echoclient
+
+❌ 错误：
+package vibe
+package teamgram
+package Echo              // Go 包名应该小写
+```
+
+##### 导入路径：
+```go
+✅ 正确：
+import "github.com/echo/echo-server"
+import "github.com/echo/echo-server/app/service/biz"
+
+❌ 错误：
+import "github.com/teamgram/teamgram-server"
+import "github.com/vibe/vibe-server"
+```
+
+##### 类型和变量名：
+```go
+✅ 正确：
+type EchoServer struct {}
+type EchoClient struct {}
+var echoConfig *Config
+const EchoVersion = "1.0.0"
+
+❌ 错误：
+type VibeServer struct {}
+type TeamgramClient struct {}
+var teamgramConfig *Config
+```
+
+#### 4.2 Java/Kotlin (Android)
+
+##### 包名：
+```java
+✅ 正确（Echo Android 客户端）：
+package com.echo.messenger;      // Echo 品牌包名
+package com.echo.ui;             // Echo UI 包
+
+⚠️ 注意：
+- echo-android-client 使用 com.echo.* 包名
+- 完全移除 Telegram 引用以符合合规要求
+- 所有类名和包名都使用 Echo 品牌
+
+❌ 错误：
+package org.telegram.messenger;  // 旧的 Telegram 包名（已废弃）
+package com.vibe.messenger;      // 旧品牌名
+package com.teamgram.messenger;  // 第三方名称
+```
+
+##### 类名：
+```java
+✅ 正确（Echo Android 客户端）：
+// 使用 Echo 品牌类名
+public class EchoMessagesController {}
+public class EchoLaunchActivity {}
+public class EchoApplication {}
+
+⚠️ 注意：
+- 所有类名使用 Echo 前缀或相关命名
+- 完全移除 Telegram 引用
+- 符合合规性要求
+
+❌ 错误：
+public class TelegramApplication {}  // 包含 Telegram（已废弃）
+public class VibeApplication {}      // 旧品牌名
+public class TeamgramController {}   // 第三方名称
+```
+
+### 5. 配置文件命名
+
+#### 5.1 YAML 配置文件
+
+##### 规则：
+- 服务名使用小写
+- 文件名：`服务名.yaml`
+
+##### 示例：
+```
+✅ 正确：
+echo-server/configs/gateway.yaml
+echo-server/configs/auth.yaml
+echo-server/configs/message.yaml
+
+❌ 错误：
+teamgramd/etc/authsession.yaml
+vibed/etc/bff.yaml
+echo-server-source/echod/etc/session.yaml  # 这是参考项目，不是我们的配置
+```
+
+#### 5.2 配置文件内容
+
+```yaml
+✅ 正确：
+Name: service.echo.authsession
+Database: echo
+TablePrefix: echo_
+
+❌ 错误：
+Name: service.teamgram.authsession
+Database: teamgram
+TablePrefix: teamgram_
+```
+
+### 6. 数据库命名
+
+#### 规则：
+- 数据库名：`echo`
+- 表前缀：`echo_` 或无前缀
+- 全小写，单词间用下划线分隔
+
+#### 示例：
+```sql
+✅ 正确：
+CREATE DATABASE echo;
+USE echo;
+CREATE TABLE users (...);
+CREATE TABLE echo_messages (...);
+
+❌ 错误：
+CREATE DATABASE teamgram;
+CREATE DATABASE vibe;
+CREATE TABLE Teamgram_Users (...);
+```
+
+### 7. Docker 容器和镜像命名
+
+#### 规则：
+- 镜像名：`echo-服务名`
+- 容器名：`echo-服务名`
+- 全小写，单词间用连字符分隔
+
+#### 示例：
+```yaml
+✅ 正确：
+services:
+  echo-server:
+    image: echo-server:latest
+    container_name: echo-server
+  
+  echo-mysql:
+    image: mysql:5.7
+    container_name: echo-mysql
+
+❌ 错误：
+services:
+  teamgram:
+    image: teamgram:latest
+  vibe-server:
+    image: vibe-server:latest
+```
+
+### 8. 环境变量命名
+
+#### 规则：
+- 全大写
+- 使用 `ECHO_` 前缀
+- 单词间用下划线分隔
+
+#### 示例：
+```bash
+✅ 正确：
+ECHO_SERVER_HOST=127.0.0.1
+ECHO_SERVER_PORT=10443
+ECHO_DB_NAME=echo
+ECHO_API_ID=12345
+
+❌ 错误：
+VIBE_SERVER_HOST=127.0.0.1
+TEAMGRAM_PORT=10443
+echo_db_name=echo          # 应该全大写
+```
+
+### 9. 日志和输出消息
+
+#### 规则：
+- 产品名称使用 "Echo"
+- 避免使用旧品牌名
+
+#### 示例：
+```bash
+✅ 正确：
+echo "🚀 启动 Echo 本地开发环境..."
+echo "✓ Echo 服务已启动"
+log.Info("Echo server started successfully")
+
+❌ 错误：
+echo "🚀 启动 Vibe 本地开发环境..."
+echo "✓ Teamgram 服务已启动"
+```
+
+### 10. Git 提交消息
+
+#### 规则：
+- 使用 Echo 作为项目名称
+- 提及旧名称时使用箭头表示更名
+
+#### 示例：
+```bash
+✅ 正确：
+git commit -m "feat: add Echo authentication module"
+git commit -m "fix: Echo server connection timeout"
+git commit -m "rebrand: Vibe → Echo complete rebranding"
+git commit -m "rebrand: Teamgram → Echo server rename"
+
+❌ 错误：
+git commit -m "feat: add Vibe authentication"
+git commit -m "fix: teamgram server issue"
+```
+
+---
+
+## 🔍 品牌名称对照表
+
+### 当前品牌（正确）
+
+| 类型 | 名称 | 用途 |
+|------|------|------|
+| 主品牌 | Echo | 项目名称 |
+| 完整名称 | Echo IM | 产品全称 |
+| 服务端目录 | echo-server | Echo 服务端（100% 自研） |
+| 参考项目目录 | echo-server-source | Teamgram 原始代码（仅供参考） |
+| Android 客户端目录 | echo-android-client | Echo Android 客户端（原 Telegram-master，已完全重命名） |
+| 参考项目目录 | teamgram-android | 参考项目（保持原名，仅供参考，不部署） |
+| 数据库名 | echo | 数据库名称 |
+| Android 包名 | com.echo.messenger | Echo Android 应用包名 |
+| GitHub 路径 | github.com/jackyang1989/echo-server | Echo 服务端仓库路径 |
+
+### 已废弃品牌（错误）
+
+| 旧名称 | 状态 | 说明 |
+|--------|------|------|
+| Vibe / vibe / VIBE | ✅ 已完全清理 | 旧品牌名，已全面替换为 Echo |
+| Teamgram / teamgram / TEAMGRAM | ✅ 已完全清理 | 上游服务器原名，已全面替换为 Echo |
+| Telegram / telegram / TELEGRAM | ⚠️ 部分保留 | 在 echo-android-client 中必须替换为 Echo（合规性要求） |
+
+**清理状态**：
+- ✅ echo-proto: 161 个文件已更新（2026-02-02）
+- ✅ echo-server: 32 个文件已更新（2026-02-02）
+- ✅ 所有版权声明已更新
+- ✅ 所有 import 路径已更新
+- ✅ 所有 module 名称已更新
+
+---
+
+## 🚫 禁止使用的名称
+
+以下名称在 Echo 项目中**严格禁止使用**：
+
+### 1. 已废弃品牌名称（已完全清理）
+- ❌ Vibe / vibe / VIBE - 已全面替换为 Echo
+- ❌ Kinnect / kinnect / KINNECT - 更早的旧名，已清理
+
+### 2. 上游名称（必须替换）
+- ❌ Teamgram / teamgram / TEAMGRAM - 上游服务器原名，必须替换为 Echo
+- ❌ Telegram / telegram / TELEGRAM - 在 echo-android-client 中必须替换为 Echo（合规性要求）
+
+### 3. 混合命名（禁止使用）
+- ❌ VibeEcho
+- ❌ EchoTeamgram
+- ❌ TeamgramEcho
+- ❌ TelegramEcho
+
+### 4. 特殊说明
+
+#### 不需要修改的目录：
+- **teamgram-android/** (参考项目)
+  - 这是参考项目，仅供参考
+  - 不是我们要部署的项目
+  - 其中的 teamgram/Teamgram 引用不需要修改
+  - 保持原名和原有代码
+
+#### 必须修改的目录：
+- **echo-proto/** ✅ 已完成
+  - ✅ module 名称: `github.com/jackyang1989/echo-proto`
+  - ✅ 所有 import 路径已更新
+  - ✅ 所有版权声明已更新（Teamgram → Echo）
+
+- **echo-server/** ✅ 已完成
+  - ✅ module 名称: `github.com/jackyang1989/echo-server`
+  - ✅ 依赖 `github.com/jackyang1989/echo-proto v1.0.1`
+  - ✅ 所有版权声明已更新（Teamgram → Echo）
+  - ✅ 100% 自研业务层，只复用 Teamgram Gateway
+
+- **echo-server-source/** (原 teamgram-server-source)
+  - ⚠️ 仅供参考，不直接使用
+  - 保持原有 Teamgram 代码不变
+  - 用于理解 MTProto 实现、参考数据库设计
+
+- **echo-android-client/** (原 Telegram-master)
+  - 所有 telegram → echo
+  - 所有 Telegram → Echo
+  - 包名: org.telegram.* → com.echo.*
+  - 类名: Telegram* → Echo*
+  - 完全替换 Telegram 引用为 Echo（合规性要求）
+  - 使用 `rebrand-telegram-to-echo.sh` 脚本自动完成
+
+- **项目根目录的文档和脚本**
+  - 所有 .md 文档
+  - 所有 .sh 脚本
+  - 配置文件
+
+---
+
+## ✅ 检查清单
+
+在提交代码或文档前，请确认：
+
+### 文件命名检查
+- [ ] 所有 Markdown 文档使用 `ECHO_` 前缀
+- [ ] 所有 Shell 脚本使用 `echo-` 前缀
+- [ ] 目录名使用 `echo-` 前缀（小写）
+
+### 代码内容检查
+- [ ] 没有 `vibe` / `Vibe` / `VIBE` 字符串
+- [ ] 没有 `teamgram` / `Teamgram` / `TEAMGRAM` 字符串
+- [ ] 包名和导入路径使用 `echo`
+- [ ] 数据库名为 `echo`
+
+### 配置文件检查
+- [ ] YAML 配置中的服务名使用 `echo`
+- [ ] 环境变量使用 `ECHO_` 前缀
+- [ ] Docker 容器名使用 `echo-` 前缀
+
+### 文档内容检查
+- [ ] 产品名称统一为 "Echo"
+- [ ] 没有提及旧品牌名（除非在更名说明中）
+- [ ] 所有示例代码使用正确的命名
+
+---
+
+## 🔧 自动化检查脚本
+
+### 检查是否有遗漏的旧名称
+
+```bash
+#!/bin/bash
+# check-branding.sh - 检查品牌命名是否正确
+
+echo "🔍 检查旧品牌名称..."
+
+# 检查 vibe
+echo "检查 'vibe' 相关..."
+grep -r "vibe" --include="*.md" --include="*.sh" --include="*.go" --include="*.java" . | grep -v "AGENTS.md" | grep -v ".git"
+
+# 检查 teamgram
+echo "检查 'teamgram' 相关..."
+grep -r "teamgram" --include="*.md" --include="*.sh" --include="*.go" --include="*.java" . | grep -v "AGENTS.md" | grep -v ".git"
+
+# 检查 Vibe
+echo "检查 'Vibe' 相关..."
+grep -r "Vibe" --include="*.md" --include="*.sh" --include="*.go" --include="*.java" . | grep -v "AGENTS.md" | grep -v ".git"
+
+# 检查 Teamgram
+echo "检查 'Teamgram' 相关..."
+grep -r "Teamgram" --include="*.md" --include="*.sh" --include="*.go" --include="*.java" . | grep -v "AGENTS.md" | grep -v ".git"
+
+echo "✅ 检查完成"
+```
+
+---
+
+## 📝 更名历史
+
+### 第一次更名：Kinnect → Vibe
+- 日期：2026-01-28
+- 范围：所有文档和配置文件
+- 状态：已完成
+
+### 第二次更名：Vibe → Echo
+- 日期：2026-01-29
+- 范围：所有文档、脚本、配置文件
+- 状态：已完成
+
+### 第三次更名：Teamgram → Echo (服务端)
+- 日期：2026-01-29
+- 范围：服务端代码、配置、数据库
+- 状态：已完成
+
+### 第四次更名：Telegram → Echo (Android 客户端)
+- 日期：2026-01-30
+- 范围：Android 客户端代码、包名、类名
+- 原因：合规性要求，移除 Telegram 引用
+- 工具：`rebrand-telegram-to-echo.sh`
+- 状态：✅ 已完成
+
+---
+
+## 🎯 AI Agent 使用指南
+
+### 当 AI Agent 处理本项目时，必须：
+
+1. **首先阅读本文档**
+   - 在进行任何代码或文档修改前，先阅读 `AGENTS.md`
+   - 理解并记住所有命名规则
+
+2. **严格遵守命名规则**
+   - 创建新文件时，使用正确的命名格式
+   - 编写代码时，使用正确的包名和类名
+   - 编写文档时，使用正确的品牌名称
+
+3. **检查现有内容**
+   - 如果发现旧品牌名称，立即指出并建议修正
+   - 提供正确的替换方案
+
+4. **提供一致的输出**
+   - 所有生成的代码、文档、配置都应符合本规则
+   - 在响应中使用 "Echo" 而不是其他名称
+
+5. **更新文档**
+   - 如果规则有变化，更新本文档
+   - 记录所有重要的命名决策
+
+---
+
+## 📞 联系和反馈
+
+如果发现：
+- 命名规则不清楚
+- 发现遗漏的旧名称
+- 需要添加新的命名规则
+
+请更新本文档或联系项目维护者。
+
+---
+
+---
+
+# 🧱 架构与执行规范（必须遵守 | 架构铁律）
+
+**本部分为执行级硬规则，适用于：Echo Server、Echo Admin、Echo Client 的所有新增功能与改动。**
+
+---
+
+## 🎯 核心设计原则
+
+**Echo 是 IM 优先的系统。**
+
+所有非 IM 核心功能：
+- ✅ 必须是旁路化实现
+- ✅ 必须可降级、可关闭
+- ✅ 必须不拖垮聊天体验
+
+**宁可功能不上线，也不允许污染 IM 内核。**
+
+---
+
+## 🧱 架构与模块边界规范（Hard Rule）
+
+### A. IM 内核不可污染（Hard Rule）
+
+#### IM 内核职责范围
+
+**IM 内核**（`echo-server`，即 IM Core）**只允许**承担以下职责：
+
+✅ **允许的职责**：
+- 协议级会话管理
+- 消息投递与同步
+- 群 / 频道的协议行为
+- 媒体的协议级处理
+- 推送「是否发生」的触发判断
+
+**注意**：`echo-server` 是 100% 自研的服务端，只复用 Teamgram Gateway 处理 MTProto 协议。
+
+#### IM 内核严禁依赖的业务模块
+
+❌ **IM 内核严禁**直接依赖、引用或包含以下业务模块或逻辑：
+- 邮箱 / 短信注册
+- 邀请码 / 白名单
+- 广场 / 信息流 / 推荐
+- 广告 / 商业化
+- 运营配置 / A/B 实验
+
+#### 业务模块与 IM Core 通信方式
+
+所有业务功能必须**旁路化实现**，仅允许通过以下方式与 IM Core 通信：
+
+✅ **允许的通信方式**：
+- 事件（Event）
+- gRPC
+- HTTP API
+
+#### 设计目标
+
+本规则与 Admin Panel 中"业务层故障不影响 IM 核心"的设计目标一致，现上升为**不可违反的执行规范硬规则**。
+
+---
+
+### B. 单向依赖原则（Hard Rule）
+
+#### 业务模块对 IM 的访问权限
+
+**Square / 推荐 / 运营 / 风控模块**：
+
+✅ **允许**：
+- 读取 IM 事件
+- 读取 IM 的只读视图或副本
+
+❌ **禁止**：
+- 直接写入 IM 的核心消息表
+- 直接写入 IM 的会话 / 投递链路表
+
+#### 影响 IM 状态的受控方式
+
+如确需影响 IM 状态，必须满足：
+
+1. **通过明确的「管理操作 API」**
+2. **该操作必须具备**：
+   - 权限校验
+   - 完整审计记录（谁 / 何时 / 做了什么）
+
+#### 核心原则
+
+**IM 不知道业务的存在，业务只能通过受控方式影响 IM。**
+
+---
+
+## 🚦 可降级与功能开关规范（上线门禁）
+
+### A. 新功能上线必须配 Feature Flag（Hard Rule）
+
+#### 适用范围
+
+任何新增功能（包括但不限于）：
+- 邮箱注册
+- 广场 Tab
+- 推荐算法
+- 广告位
+- 新入口 / 新流程
+
+#### 必须满足的条件
+
+必须满足以下条件，**否则禁止上线**：
+
+1. **拥有独立 Feature Flag Key**
+2. **默认状态为「关闭」**
+3. **至少支持以下控制维度**：
+   - 全局开关
+   - 用户白名单
+   - 客户端版本
+
+#### 实现标准
+
+Feature Flag / RemoteConfig 以现有 IA 中定义的结构为唯一标准。
+
+---
+
+### B. UI 与服务必须同时可关（Hard Rule）
+
+#### UI 层要求
+
+**Feature Flag 关闭时**：
+- 入口必须隐藏或不可交互
+
+#### 服务层要求
+
+**Feature Flag 关闭时**：
+- API 必须返回明确的降级态
+
+#### 功能关闭后的保证
+
+功能关闭后：
+- **IM 聊天、消息同步必须完全不受影响**
+
+#### 示例
+
+```yaml
+SHOW_SQUARE_TAB = false
+```
+
+**客户端**：
+- 不显示广场入口
+
+**服务端**：
+- 相关接口返回降级结果
+
+---
+
+## 🔒 契约与版本化规范（长期维护核心）
+
+### A. 事件 / 接口 Schema 必须版本化（Hard Rule）
+
+#### IM 事件命名规范
+
+IM 事件命名必须包含版本号：
+
+```
+✅ 正确：
+im.message.created.v1
+im.chat.updated.v1
+```
+
+#### gRPC / HTTP 接口版本化
+
+gRPC / HTTP 接口：
+- URL 路径或 Header 中必须体现版本
+
+#### 禁止行为
+
+❌ **禁止**：
+- 不升版本直接做破坏性修改
+- 隐式改变字段含义或结构
+
+---
+
+### B. 升级 Teamgram Gateway / IM Core 的兼容流程（Hard Rule）
+
+#### 升级流程
+
+升级 IM Core / Gateway 时，必须遵循以下流程：
+
+1. **保证现有 v1 事件 / 接口保持不变**
+2. **新能力以 v2 形式引入**
+3. **v1 / v2 并行运行一段时间**
+4. **业务侧完成迁移后，方可下线 v1**
+
+#### 目标
+
+**升级 Gateway ≠ 重写业务系统**
+
+**注意**：echo-server 只复用 Teamgram Gateway，业务层 100% 自研。
+
+---
+
+## 🧾 架构 / 功能变更执行清单（PR 强制项）
+
+### PR 提交必答清单
+
+任何新增功能或架构改动的 PR，必须逐条明确回答：
+
+1. **是否影响 IM Core？**
+   - 如是，列出具体原因
+
+2. **是否有 Feature Flag？**
+   - Key 是什么？
+
+3. **功能关闭后的降级行为是什么？**
+
+4. **是否新增 / 修改事件或接口？**
+   - 是否版本化？
+
+5. **是否具备审计点（谁 / 何时 / 做了什么）？**
+
+### 合并条件
+
+**未完整满足以上任一项，PR 不得合并。**
+
+---
+
+## 📡 推送与搜索治理（上升为硬规则）
+
+### 推送规范
+
+#### Echo 推送职责范围
+
+**Echo 只控制「推送是否发生」**
+
+#### Echo 不得做的事
+
+❌ **Echo 不得**：
+- 修改推送内容
+- 注入推荐 / 广告逻辑
+
+#### 允许的控制范围
+
+✅ **允许的控制范围**：
+- 全局熔断
+- 用户级关闭
+- 推送频率限制
+
+---
+
+### 搜索与可发现性治理
+
+#### 定位
+
+搜索 / 可发现性属于**平台治理能力**
+
+#### 统一策略
+
+所有注册方式（手机号 / 邮箱 / 邀请）：
+- **必须遵守统一搜索策略**
+
+#### 后台可控项
+
+后台必须可控：
+- 用户是否可被搜索
+- 群 / 频道是否可被发现
+- 风险账号是否被降权或移除
+
+---
+
+## � 代码变更追踪与上游兼容性规范（Hard Rule）
+
+### 背景与目标
+
+Echo 项目基于 Telegram 官方客户端和 Teamgram 服务端进行二次开发。为确保：
+- 后期能够追踪和合并上游更新
+- 自定义功能在上游更新后仍能正常工作
+- 技术债务可控、可维护
+
+所有 AI Agent 和开发者在进行二次开发时，**必须严格遵守本规范**。
+
+---
+
+### A. 代码变更文档化要求（Hard Rule）
+
+#### 适用范围
+
+任何对 IM 功能的二次开发，包括但不限于：
+- 新增功能（如：快捷回复模板、消息增强、UI 定制）
+- 修改现有功能（如：消息流程优化、界面调整）
+- 性能优化（如：缓存策略、渲染优化）
+- Bug 修复（如：崩溃修复、逻辑修正）
+
+#### 必须记录的信息
+
+每次代码变更必须创建或更新变更记录文档，包含以下信息：
+
+##### 1. 变更概述（Change Summary）
+
+```markdown
+## 变更 ID: ECHO-FEATURE-001
+- **功能名称**: 快捷回复模板
+- **变更类型**: 新增功能 / 修改功能 / Bug 修复 / 性能优化
+- **优先级**: 高 / 中 / 低
+- **开发者**: [开发者名称或 AI Agent ID]
+- **开发日期**: YYYY-MM-DD
+- **上游版本基线**: Telegram v10.5.2 / Teamgram v1.2.3
+```
+
+##### 2. 功能描述（Feature Description）
+
+```markdown
+### 功能说明
+- **用户故事**: 作为用户，我希望能够保存常用回复模板，以便快速回复消息
+- **功能范围**: 
+  - 模板创建、编辑、删除
+  - 模板分类管理
+  - 快速插入模板到输入框
+- **UI/UX 变更**: 在聊天输入框增加模板按钮，点击弹出模板选择器
+```
+
+##### 3. 技术实现细节（Technical Implementation）
+
+```markdown
+### 修改的文件清单
+
+#### Android 客户端 (echo-android-client)
+- **新增文件**:
+  - `com/echo/messenger/QuickReplyManager.java` - 模板管理核心类
+  - `com/echo/ui/QuickReplyFragment.java` - 模板选择 UI
+  - `res/layout/quick_reply_item.xml` - 模板列表项布局
+  
+- **修改文件**:
+  - `com/echo/ui/ChatActivity.java`
+    - 行号: 1234-1256
+    - 变更内容: 添加模板按钮点击事件处理
+    - 变更原因: 集成快捷回复入口
+  
+  - `com/echo/messenger/MessagesController.java`
+    - 行号: 567-589
+    - 变更内容: 添加模板数据同步逻辑
+    - 变更原因: 支持跨设备模板同步
+
+#### 服务端 (echo-server)
+- **新增文件**:
+  - `internal/service/quickreply/service.go` - 快捷回复服务
+  - `sql/migrate-20260130-quickreply.sql` - 数据库迁移脚本
+  
+- **修改文件**:
+  - `internal/service/user/service.go`
+    - 行号: 234-256
+    - 变更内容: 添加用户模板配置字段
+    - 变更原因: 存储用户模板偏好设置
+```
+
+##### 4. 数据库变更（Database Changes）
+
+```markdown
+### 数据库 Schema 变更
+
+#### 新增表
+```sql
+CREATE TABLE quick_reply_templates (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  category VARCHAR(50),
+  content TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+#### 修改表
+- 表名: `users`
+- 变更: 添加字段 `quick_reply_enabled TINYINT(1) DEFAULT 1`
+- 迁移脚本: `echo-server/sql/migrate-20260130-quickreply.sql`
+```
+
+##### 5. API 变更（API Changes）
+
+```markdown
+### 新增 API 端点
+
+#### 创建快捷回复模板
+- **端点**: `POST /api/v1/quickreply/templates`
+- **请求体**:
+  ```json
+  {
+    "category": "greeting",
+    "content": "你好，很高兴认识你！"
+  }
+  ```
+- **响应**: 
+  ```json
+  {
+    "template_id": 12345,
+    "created_at": "2026-01-30T10:00:00Z"
+  }
+  ```
+
+#### 获取用户模板列表
+- **端点**: `GET /api/v1/quickreply/templates`
+- **查询参数**: `category` (可选)
+- **响应**: 模板列表数组
+```
+
+##### 6. 配置变更（Configuration Changes）
+
+```markdown
+### Feature Flag 配置
+- **Key**: `FEATURE_QUICK_REPLY_ENABLED`
+- **默认值**: `false`
+- **控制维度**: 全局、用户白名单、客户端版本
+- **配置文件**: `echo-server/configs/config.yaml`
+
+### 环境变量
+- **新增**: `ECHO_QUICK_REPLY_MAX_TEMPLATES=100`
+- **说明**: 每个用户最多可创建的模板数量
+```
+
+##### 7. 依赖变更（Dependency Changes）
+
+```markdown
+### 新增依赖
+- **Android**: 
+  - `implementation 'com.google.code.gson:gson:2.10.1'` (用于模板 JSON 序列化)
+  
+- **服务端**:
+  - `github.com/lib/pq v1.10.9` (PostgreSQL 驱动，如需要)
+
+### 依赖版本升级
+- 无
+```
+
+##### 8. 测试覆盖（Test Coverage）
+
+```markdown
+### 单元测试
+- `QuickReplyManagerTest.java` - 模板管理逻辑测试
+- `quickreply_test.go` - 服务端 API 测试
+
+### 集成测试
+- 模板创建 → 同步 → 跨设备显示流程测试
+
+### 手动测试清单
+- [ ] 创建模板成功
+- [ ] 编辑模板成功
+- [ ] 删除模板成功
+- [ ] 模板分类显示正确
+- [ ] 快速插入模板到输入框
+- [ ] 跨设备同步验证
+- [ ] Feature Flag 关闭后功能不可见
+```
+
+##### 9. 上游兼容性分析（Upstream Compatibility）
+
+```markdown
+### 冲突风险评估
+- **风险等级**: 低 / 中 / 高
+- **潜在冲突点**:
+  - `ChatActivity.java` 的输入框布局可能与上游更新冲突
+  - `MessagesController.java` 的消息处理流程可能需要适配
+
+### 合并策略
+- **隔离方案**: 
+  - 使用独立的 `QuickReplyManager` 类，避免修改核心消息流程
+  - UI 入口通过配置控制，可快速禁用
+  
+- **回滚方案**:
+  - Feature Flag 关闭
+  - 删除相关数据库表（保留迁移脚本用于回滚）
+  - 移除 UI 入口代码
+
+### 上游更新适配指南
+当 Telegram 官方更新时：
+1. 检查 `ChatActivity.java` 输入框相关代码是否变更
+2. 如有冲突，优先保留上游逻辑，重新集成模板按钮
+3. 验证 `MessagesController.java` 消息处理流程兼容性
+4. 运行完整测试套件确保功能正常
+```
+
+##### 10. 回滚计划（Rollback Plan）
+
+```markdown
+### 回滚步骤
+1. 设置 Feature Flag `FEATURE_QUICK_REPLY_ENABLED=false`
+2. 执行数据库回滚脚本 `echo-server/sql/rollback-20260130-quickreply.sql`
+3. 重新部署不包含快捷回复代码的版本
+4. 验证 IM 核心功能正常
+
+### 数据保留策略
+- 用户模板数据保留 30 天
+- 30 天后可选择性清理或永久保留
+```
+
+---
+
+### B. 变更记录文档结构（Hard Rule）
+
+#### 文档存放位置
+
+所有变更记录必须存放在以下位置：
+
+```
+echo-server/docs/core/changes/
+  ├── CHANGELOG.md                    # 变更总览
+  ├── README.md                       # 使用指南
+  ├── features/
+  │   ├── ECHO-FEATURE-TEMPLATE.md   # 功能模板
+  │   ├── ECHO-FEATURE-001-quick-reply.md
+  │   ├── ECHO-FEATURE-002-message-enhancement.md
+  │   └── ...
+  ├── bugfixes/
+  │   ├── ECHO-BUG-001-crash-fix.md
+  │   └── ...
+  ├── optimizations/
+  │   ├── ECHO-OPT-001-cache-improvement.md
+  │   └── ...
+  └── merge-reports/
+      ├── merge-teamgram-gateway-v1.3.0.md
+      └── ...
+
+echo-android-client/docs/core/changes/
+  ├── CHANGELOG.md                    # 变更总览
+  ├── README.md                       # 使用指南
+  ├── features/
+  │   ├── ECHO-FEATURE-TEMPLATE.md   # 功能模板
+  │   └── ...
+  ├── bugfixes/
+  ├── optimizations/
+  └── merge-reports/
+      ├── merge-telegram-v10.6.0.md
+      └── ...
+```
+
+⚠️ **重要**：
+- `echo-server` 是 100% 自研的服务端，只复用 Teamgram Gateway
+- `echo-server-source` 是 Teamgram 原始代码，仅供参考
+
+#### 核心文档目录说明
+
+- **`docs/core/`** - 核心开发文档目录（🔴 禁止删除）
+  - 只存放与开发直接相关的核心文档
+  - 严禁混入临时文档、运营文档、测试报告
+  - 所有文档必须纳入版本控制
+
+- **`docs/core/changes/`** - 代码变更记录（🔴 最重要）
+  - 所有功能开发、Bug 修复、性能优化的详细记录
+  - 上游更新合并报告
+  - 变更记录模板
+
+- **`docs/core/architecture/`** - 架构设计文档 ✅ 已完善
+  - 系统架构设计（自研架构模型）
+  - 模块设计文档（模块职责和依赖）
+  - API 契约文档（版本化和接口规范）
+
+- **`docs/core/standards/`** - 开发规范文档 ✅ 已完善
+  - 编码规范（Go 代码规范）
+  - 提交规范（Git 提交消息规范）
+  - 审查清单（PR 审查必查项）
+
+#### 其他文档目录（非核心）
+
+- **`docs/`** - 其他非核心文档
+  - 安装指南
+  - 使用手册
+  - FAQ
+  - 临时文档（建议放在 `docs/temp/`）
+
+- **项目根目录** - 项目级文档
+  - `AGENTS.md` - 品牌命名规则和架构规范（🔴 核心）
+  - `README.md` - 项目说明
+  - `DEPLOYMENT_GUIDE_MAC.md` - 部署指南
+  - 其他项目级文档
+
+#### CHANGELOG.md 格式
+
+```markdown
+# Echo 变更日志
+
+## [Unreleased]
+
+### 新增功能
+- [ECHO-FEATURE-001] 快捷回复模板 (2026-01-30)
+- [ECHO-FEATURE-002] 消息增强功能 (2026-02-01)
+
+### Bug 修复
+- [ECHO-BUG-001] 修复聊天界面崩溃问题 (2026-01-28)
+
+### 性能优化
+- [ECHO-OPT-001] 优化消息列表渲染性能 (2026-01-29)
+
+## [1.0.0] - 2026-01-30
+
+### 基线版本
+- 基于 Telegram v10.5.2
+- 基于 Teamgram v1.2.3
+- 完成品牌重命名 Telegram → Echo
+```
+
+---
+
+### C. AI Agent 开发规范（Hard Rule）
+
+#### 开发前准备
+
+AI Agent 在开始开发前必须：
+
+1. **检查上游版本**
+   - 确认当前 Echo 基于的 Telegram / Teamgram 版本
+   - 查阅上游最新变更日志
+
+2. **评估影响范围**
+   - 分析功能是否影响 IM 核心
+   - 确定是否需要 Feature Flag
+
+3. **创建变更记录文档**
+   - 分配唯一变更 ID
+   - 创建对应的 Markdown 文档
+
+#### 开发过程中
+
+AI Agent 在开发过程中必须：
+
+1. **实时记录变更**
+   - 每修改一个文件，立即更新变更记录
+   - 记录具体行号和变更内容
+
+2. **添加代码注释标记**
+   ```java
+   // ECHO-FEATURE-001: Quick Reply Template Integration - START
+   // Added by: AI Agent / Developer Name
+   // Date: 2026-01-30
+   // Description: Add template button click handler
+   private void onTemplateButtonClick() {
+       // Implementation
+   }
+   // ECHO-FEATURE-001: Quick Reply Template Integration - END
+   ```
+
+3. **保持代码隔离**
+   - 优先使用新类、新方法
+   - 避免大量修改现有核心代码
+   - 使用设计模式（如：策略模式、装饰器模式）实现功能扩展
+
+#### 开发完成后
+
+AI Agent 在开发完成后必须：
+
+1. **完善变更记录文档**
+   - 确保所有 10 个必填项完整
+   - 添加上游兼容性分析
+   - 编写回滚计划
+
+2. **更新 CHANGELOG.md**
+   - 在对应分类下添加变更条目
+   - 关联变更 ID 和详细文档
+
+3. **提交 PR 时附带变更文档**
+   - PR 描述中引用变更 ID
+   - 附上变更记录文档链接
+
+---
+
+### D. 上游更新合并流程（Hard Rule）
+
+#### 合并前准备
+
+当需要合并 Telegram / Teamgram 上游更新时：
+
+1. **变更影响分析**
+   - 查阅所有 `docs/changes/` 下的变更记录
+   - 识别可能受影响的自定义功能
+   - 评估冲突风险等级
+
+2. **创建合并分支**
+   ```bash
+   git checkout -b merge-upstream-telegram-v10.6.0
+   ```
+
+3. **备份当前版本**
+   ```bash
+   git tag echo-pre-merge-v10.6.0
+   ```
+
+#### 合并过程
+
+1. **逐个功能验证**
+   - 按变更 ID 顺序检查每个自定义功能
+   - 运行功能相关测试
+   - 记录冲突和需要适配的代码
+
+2. **冲突解决优先级**
+   - **优先保留上游逻辑**（IM 核心功能）
+   - **重新集成自定义功能**（基于新的上游代码）
+   - **更新变更记录文档**（记录适配过程）
+
+3. **回归测试**
+   - 运行完整测试套件
+   - 手动测试所有自定义功能
+   - 验证 IM 核心功能正常
+
+#### 合并后处理
+
+1. **更新基线版本**
+   ```markdown
+   ## [1.1.0] - 2026-02-15
+   
+   ### 上游更新
+   - 合并 Telegram v10.6.0
+   - 合并 Teamgram v1.3.0
+   
+   ### 自定义功能适配
+   - [ECHO-FEATURE-001] 快捷回复模板适配新版输入框
+   - [ECHO-FEATURE-002] 消息增强功能兼容新消息流程
+   ```
+
+2. **更新所有变更记录**
+   - 在每个功能的变更记录中添加"上游更新适配历史"章节
+   - 记录适配过程和代码变更
+
+3. **发布合并报告**
+   - 创建 `docs/merge-reports/merge-telegram-v10.6.0.md`
+   - 记录合并过程、冲突解决、测试结果
+
+---
+
+### E. 代码审查清单（PR Review Checklist）
+
+#### 变更记录完整性检查
+
+- [ ] 是否创建了变更记录文档？
+- [ ] 变更 ID 是否唯一？
+- [ ] 10 个必填项是否完整？
+- [ ] 是否更新了 CHANGELOG.md？
+
+#### 代码质量检查
+
+- [ ] 是否添加了代码注释标记（ECHO-XXX-XXX）？
+- [ ] 是否遵循了代码隔离原则？
+- [ ] 是否避免了对 IM 核心的污染？
+- [ ] 是否配置了 Feature Flag？
+
+#### 上游兼容性检查
+
+- [ ] 是否评估了冲突风险？
+- [ ] 是否提供了合并策略？
+- [ ] 是否编写了回滚计划？
+- [ ] 是否记录了上游版本基线？
+
+#### 测试覆盖检查
+
+- [ ] 是否编写了单元测试？
+- [ ] 是否编写了集成测试？
+- [ ] 是否提供了手动测试清单？
+- [ ] 是否验证了 Feature Flag 关闭后的行为？
+
+---
+
+### F. 工具与自动化（推荐）
+
+#### 变更记录生成工具
+
+建议开发 CLI 工具辅助生成变更记录：
+
+```bash
+# 创建新功能变更记录
+./tools/create-change.sh --type feature --name "Quick Reply Template"
+
+# 输出：
+# Created: docs/changes/features/ECHO-FEATURE-003-quick-reply-template.md
+# Updated: docs/changes/CHANGELOG.md
+```
+
+#### 代码扫描工具
+
+建议使用工具自动扫描代码变更：
+
+```bash
+# 扫描自定义代码标记
+./tools/scan-custom-code.sh
+
+# 输出：
+# Found 15 custom code blocks:
+# - ECHO-FEATURE-001: 5 blocks in ChatActivity.java
+# - ECHO-FEATURE-002: 3 blocks in MessagesController.java
+# ...
+```
+
+#### 上游更新检测
+
+建议定期检查上游更新：
+
+```bash
+# 检查 Telegram 上游更新
+./tools/check-upstream.sh --source telegram
+
+# 输出：
+# Current: v10.5.2
+# Latest: v10.6.0
+# Changes: 127 commits, 45 files changed
+# Risk: Medium (ChatActivity.java modified)
+```
+
+---
+
+## 🔚 最终铁律（写给未来）
+
+### Echo 核心定位
+
+**Echo 是 IM 优先的系统。**
+
+### 非 IM 功能的三大原则
+
+所有非 IM 功能：
+
+1. ✅ **必须是旁路**
+2. ✅ **必须可关闭**
+3. ✅ **必须不拖垮聊天体验**
+
+### 代码变更的三大原则
+
+所有代码变更：
+
+1. ✅ **必须文档化**
+2. ✅ **必须可追踪**
+3. ✅ **必须可回滚**
+
+### 底线
+
+**宁可功能不上线，也不允许污染 IM 内核。**
+
+**宁可开发慢一点，也不允许缺失变更记录。**
+
+---
+
+## 📄 版本历史
+
+| 版本 | 日期 | 变更内容 |
+|------|------|----------|
+| 1.0.0 | 2026-01-29 | 初始版本，定义 Echo 品牌命名规则 |
+| 1.1.0 | 2026-01-30 | 新增架构与执行规范（必须遵守 \| 架构铁律） |
+| 1.2.0 | 2026-01-30 | 新增代码变更追踪与上游兼容性规范 |
+| 1.3.0 | 2026-01-30 | 新增核心文档索引，重组文档结构（docs/core/） |
+| 1.4.0 | 2026-01-30 | 完善架构设计文档和开发规范文档 |
+| 1.5.0 | 2026-01-30 | 新增强制执行机制与工具索引（Enforcement Mechanisms） |
+| 1.6.0 | 2026-02-02 | 更新架构说明：echo-server 100% 自研，只复用 Gateway |
+
+---
+
+**最后更新**: 2026-02-02  
+**维护者**: Echo 项目团队  
+**状态**: 生效中 ✅
+
+---
+
+## ⚠️ 重要提醒
+
+**本文档是 Echo 项目的核心规范文档，所有参与者必须遵守。**
+
+违反命名规则可能导致：
+- 代码审查不通过
+- 构建失败
+- 品牌形象不一致
+- 用户困惑
+
+违反架构规范可能导致：
+- IM 核心功能受损
+- 系统稳定性下降
+- 无法追踪上游更新
+- 技术债务累积
+
+违反变更追踪规范可能导致：
+- 上游更新无法合并
+- 自定义功能丢失
+- 代码维护困难
+- 回滚失败
+
+**请始终使用 "Echo"，而不是 "Vibe" 或 "Teamgram"！**
+
+**请始终遵守架构铁律，保持 IM 内核纯净！**
+
+**请始终记录代码变更，确保可追踪、可维护、可回滚！**
