@@ -2,6 +2,14 @@
 
 本目录包含 Echo 项目的所有非核心文档。
 
+## 🔴 P0 必读（不可跳过）
+
+在修改任何代码/文档（server/client/admin/square）之前，必须先阅读：
+
+- [../echo-docs/docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md](../echo-docs/docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md)
+
+该文档是最高权威，核心约束包括：不修改 MTProto/TL schema、所有 client-visible 行为必须映射既有 Telegram TL 机制、`updates/pts/getDifference` 为生死线、Admin 写策略 + 审计、IM Core 关键路径强制执行。
+
 ## 📁 目录结构
 
 ### temp/ - 临时文档
