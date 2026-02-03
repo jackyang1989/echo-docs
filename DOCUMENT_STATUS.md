@@ -26,7 +26,7 @@
 | 文档 | 路径 | 版本 | 职责范围 |
 |------|------|------|---------|
 | **ECHO执行方案-精简版.md** | `./ECHO执行方案-精简版.md` | v5.0 | **Week 1-8 详细计划**（更详细的代码示例和验收标准） |
-| **ECHO_DEVELOPMENT_PLAN_V2.md** | `/echo/ECHO_DEVELOPMENT_PLAN_V2.md` | v2.0 | **Week 9-36 计划**（IM 增强、推送、后台、广场） |
+| **ECHO_DEVELOPMENT_PLAN_V2.md** | 主仓库 `/echo/ECHO_DEVELOPMENT_PLAN_V2.md`<br>[GitHub 链接](https://github.com/jackyang1989/echo/blob/main/ECHO_DEVELOPMENT_PLAN_V2.md) | v2.0 | **Week 9-36 计划**（IM 增强、推送、后台、广场） |
 
 ### 🟡 功能规划（生效中）
 
@@ -41,22 +41,22 @@
 
 ---
 
-## ⚠️ 冲突文档清单（需要更新或归档）
+## ⚠️ 冲突文档清单（已归档）
 
-### 与 v5 执行方案冲突
+### 与 v5 执行方案冲突（已归档）
 
-| 文档 | 路径 | 问题 | 处理建议 |
+| 文档 | 路径 | 问题 | 处理状态 |
 |------|------|------|---------|
-| **ECHO_DESIGN_PRINCIPLES.md** | `./docs/architecture/ECHO_DESIGN_PRINCIPLES.md` | 强调"Echo Server 保持原样不修改/业务都在 NestJS"，与 v5"业务层 100% 自研"冲突 | 🗃️ 归档或更新 |
-| **ECHO_ARCHITECTURE.md** | `./docs/architecture/ECHO_ARCHITECTURE.md` | 仍把"Echo Business Server (NestJS)"放在核心图里，容易造成"核心能力旁路化"误解 | 🗃️ 归档或更新 |
-| **ECHO_DEVELOPMENT_ROADMAP.md** | `./docs/planning/ECHO_DEVELOPMENT_ROADMAP.md` | 1月旧版 roadmap，与当前计划不一致 | 🗃️ 归档 |
-| **NEXT_STEPS.md** | `./docs/planning/NEXT_STEPS.md` | 一次性本机 Docker/I/O 测试的操作指南，不是 roadmap | 🗃️ 归档 |
+| **ECHO_DESIGN_PRINCIPLES.md** | `./docs/archive/ECHO_DESIGN_PRINCIPLES.md` | 强调"Echo Server 保持原样不修改/业务都在 NestJS"，与 v5"业务层 100% 自研"冲突 | ✅ 已归档 |
+| **ECHO_ARCHITECTURE.md** | `./docs/archive/ECHO_ARCHITECTURE.md` | 仍把"Echo Business Server (NestJS)"放在核心图里，容易造成"核心能力旁路化"误解 | ✅ 已归档 |
+| **ECHO_DEVELOPMENT_ROADMAP.md** | `./docs/archive/ECHO_DEVELOPMENT_ROADMAP.md` | 1月旧版 roadmap，与当前计划不一致 | ✅ 已归档 |
+| **NEXT_STEPS.md** | `./docs/archive/NEXT_STEPS.md` | 一次性本机 Docker/I/O 测试的操作指南，不是 roadmap | ✅ 已归档 |
 
-### 品牌/基线不一致
+### 品牌/基线不一致（已修复）
 
-| 文档 | 路径 | 问题 | 处理建议 |
+| 文档 | 路径 | 问题 | 处理状态 |
 |------|------|------|---------|
-| **QUICK_START.md** | `./QUICK_START.md` | 仍有 org.telegram.* 路径、以 MySQL 为主的部署描述，与 PostgreSQL 基线不一致 | ⚠️ 需要更新 |
+| **QUICK_START.md** | `./QUICK_START.md` | 仍有 org.telegram.* 路径、以 MySQL 为主的部署描述，与 PostgreSQL 基线不一致 | ✅ 已修复 |
 
 ---
 
@@ -69,6 +69,10 @@
 | ECHO_SERVER_REBUILD_PLAN.md | `./docs/archive/` | 2026-02-03 | 服务端重建计划 |
 | ECHO_CLIENT_DEVELOPMENT_GUIDE.md | `./docs/archive/` | 2026-02-03 | 客户端开发指南 |
 | ECHO_START_HERE.md | `./docs/archive/` | 2026-02-03 | 旧版入门指南 |
+| ECHO_DESIGN_PRINCIPLES.md | `./docs/archive/` | 2026-02-03 | 旧版设计原则（与 v5 冲突） |
+| ECHO_ARCHITECTURE.md | `./docs/archive/` | 2026-02-03 | 旧版架构设计（与 v5 冲突） |
+| ECHO_DEVELOPMENT_ROADMAP.md | `./docs/archive/` | 2026-02-03 | 旧版开发路线图（1月版本） |
+| NEXT_STEPS.md | `./docs/archive/` | 2026-02-03 | 一次性操作指南 |
 
 ---
 
@@ -76,11 +80,11 @@
 
 | 优先级 | 文档 | 行动 | 状态 |
 |--------|------|------|------|
-| P0 | ECHO_DESIGN_PRINCIPLES.md | 归档或与 v5 对齐 | ⏳ 待处理 |
-| P0 | ECHO_ARCHITECTURE.md | 归档或与 v5 对齐 | ⏳ 待处理 |
-| P1 | ECHO_DEVELOPMENT_ROADMAP.md | 归档 | ⏳ 待处理 |
-| P1 | NEXT_STEPS.md | 归档 | ⏳ 待处理 |
-| P2 | QUICK_START.md | 更新为 PostgreSQL 基线 | ⏳ 待处理 |
+| P0 | ECHO_DESIGN_PRINCIPLES.md | 归档或与 v5 对齐 | ✅ 已完成 |
+| P0 | ECHO_ARCHITECTURE.md | 归档或与 v5 对齐 | ✅ 已完成 |
+| P1 | ECHO_DEVELOPMENT_ROADMAP.md | 归档 | ✅ 已完成 |
+| P1 | NEXT_STEPS.md | 归档 | ✅ 已完成 |
+| P2 | QUICK_START.md | 更新为 PostgreSQL 基线 | ✅ 已完成 |
 
 ---
 

@@ -25,6 +25,20 @@ echo-docs/
 
 ## 🎯 核心文档
 
+### 开发计划文档
+
+**Echo 项目采用分阶段开发计划**：
+
+| 阶段 | 权威文档 | 位置 | 说明 |
+|------|---------|------|------|
+| **Week 1-8** | `ECHO执行方案-精简版.md` (v5.0) | 本仓库 | Gateway、登录、消息、同步、MVP 完善 |
+| **Week 9-36** | `ECHO_DEVELOPMENT_PLAN_V2.md` (v2.0) | [主仓库](https://github.com/jackyang1989/echo/blob/main/ECHO_DEVELOPMENT_PLAN_V2.md) | IM 增强、推送、后台、广场 |
+
+**注意**：
+- Week 1-8 使用本仓库的 `ECHO执行方案-精简版.md`（更详细的代码示例和验收标准）
+- Week 9-36 使用主仓库的 `ECHO_DEVELOPMENT_PLAN_V2.md`（长期路线图）
+- 两份文档互补，不冲突
+
 ### AGENTS.md - 必读规范文档
 
 **所有 AI Agent 和开发者在开始工作前必须阅读 `AGENTS.md`！**
@@ -75,8 +89,10 @@ echo-docs/
 
 ### 架构文档
 - `docs/architecture/ARCHITECTURE_DEPLOYMENT.md` - 架构与部署
-- `docs/architecture/ECHO_ARCHITECTURE.md` - Echo 架构设计
-- `docs/architecture/ECHO_DESIGN_PRINCIPLES.md` - 设计原则
+
+**已归档的旧版架构文档**（与 v5 执行方案冲突）：
+- `docs/archive/ECHO_ARCHITECTURE.md` - 旧版架构设计
+- `docs/archive/ECHO_DESIGN_PRINCIPLES.md` - 旧版设计原则
 
 ### 品牌文档
 - `docs/branding/ECHO_BRANDING_GUIDE.md` - 品牌指南
@@ -87,9 +103,16 @@ echo-docs/
 - `docs/configuration/ECHO_SECURITY_CONFIG.md` - 安全配置
 
 ### 规划文档
-- `docs/planning/ECHO_DEVELOPMENT_ROADMAP.md` - 开发路线图
 - `docs/planning/ECHO_ADMIN_PANEL.md` - 管理面板设计
 - `docs/planning/ECHO_SQUARE_DESIGN.md` - 广场功能设计
+- `docs/planning/ECHO_FEATURE_ROADMAP.md` - 功能范围（580/601 个 API）
+- `docs/planning/ECHO_UNSUPPORTED_FEATURES.md` - 不支持的 4% 功能
+- `docs/planning/ECHO_MEDIA_STORAGE_STRATEGY.md` - 媒体存储策略（v2.0.0）
+- `docs/planning/ECHO_STORAGE_PERMISSION_MODEL.md` - 存储与权限模型
+
+**已归档的旧版规划文档**：
+- `docs/archive/ECHO_DEVELOPMENT_ROADMAP.md` - 旧版开发路线图（1月版本）
+- `docs/archive/NEXT_STEPS.md` - 一次性操作指南
 
 ### 参考文档
 - `docs/reference/ECHO_ANDROID_CLIENT_REBRAND.md` - Android 客户端重命名
