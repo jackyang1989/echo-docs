@@ -225,3 +225,79 @@ Square 存储媒体必须引用 `file_id`（或 file_ids），不得以 URL 作�
 - `update_log` 可回放能力已验证
 - 文件上传/下载 baseline 可用（以 `file_id` 模型为准）
 - 管理操作具备审计（至少覆盖封禁/强制登出/紧急开关）
+
+---
+
+<a id="internal-transport-evolution-constraint"></a>
+
+## 11. Internal Transport Evolution Constraint (P0)
+
+### Hard Constraints (Week 1-8)
+
+1. Until the end of Week 8, Gateway -> Auth / Message / Sync MUST continue using HTTP REST as the internal transport.
+   - Temporary compatibility layers, stubs, fake success, or skipping logic are strictly forbidden.
+
+2. Week 7-8 scope is strictly limited to:
+   - Real-time push delivery (PushUpdate)
+   - update_log based replay
+   - MTProto end-to-end consistency (two devices identical)
+   - stability, load testing, monitoring
+
+   Any gRPC refactor or transport-layer replacement is prohibited during this period.
+
+### When gRPC Migration Is Allowed
+
+- Internal transport migration (HTTP -> gRPC) is only allowed starting from:
+  **Week 9 (Phase 2, first iteration)**
+
+- The migration must be:
+  - behavior-preserving
+  - fully reversible
+  - independently verifiable via MTProto E2E tests
+
+### Mandatory Migration Procedure
+
+Step A. Extract interfaces first (no behavior change)
+
+- Define backend interfaces inside Gateway:
+  - AuthBackend.SendCode/SignIn/SignUp
+  - MessageBackend.SendMessage/GetHistory/GetDialogs/ReadHistory/DeleteMessages
+  - SyncBackend.PushUpdate/GetState/GetDifference
+- Provide an HTTP implementation (existing REST) first and keep tests green.
+
+Step B. Define gRPC protos (only cover implemented capabilities)
+
+- Create new proto files:
+  - `/api/proto/echo_auth.proto`
+  - `/api/proto/echo_message.proto`
+  - `/api/proto/echo_sync.proto`
+- Generate Go code via buf or protoc.
+- Only include Week 1-8 implemented P0 methods. Do not add unimplemented features.
+
+Step C. Expose gRPC on services without removing HTTP
+
+- Auth service adds a gRPC server.
+- HTTP handlers and gRPC handlers MUST share the same business logic (same UseCase/Service). Do not duplicate logic.
+- Repeat for Message/Sync.
+- Deliverable: HTTP and gRPC both available, behavior identical.
+
+Step D. Switch Gateway to gRPC with rollback
+
+- Add config: `BACKEND_TRANSPORT=grpc|http` (default: http).
+- In staging/local, switch to grpc and run E2E:
+  - two devices identical
+  - offline gap recovery via getDifference
+  - update_log replay correctness
+- After passing, change default to grpc but keep HTTP rollback for at least 2 weeks.
+
+Step E. Remove HTTP (convergence)
+
+- After 2 weeks without rollback in production, remove Gateway HTTP backend implementation and service HTTP routes (except /health if needed).
+- Update docs to explicitly state:
+  - Internal transport = gRPC
+  - External protocol = MTProto
+
+### Acceptance Gates
+
+- Before/after migration: MTProto E2E MUST stay identical (two devices), offline gap recovery MUST work (getDifference), message order/read/delete behaviors MUST be unchanged.
+- Any behavior difference is a failure. No "ship now, fix later".
