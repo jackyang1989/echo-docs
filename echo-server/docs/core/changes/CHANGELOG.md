@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- [ECHO-FEATURE-004] Message 服务实现（Week 3-4）(2026-02-03)
+  - 5 个核心 API: sendMessage、getHistory、getDialogs、readHistory、deleteMessages
+  - 遵循铁律 A (原子 pts 分配) 和铁律 B (pending_updates 更新日志)
+  - 8 个新增文件 + 2 个修改文件
+- [ECHO-FEATURE-003] Auth 服务实现 (2026-02-02)
+  - 5 个 API: sendCode、signIn、signUp、logOut、resendCode
 - [ECHO-FEATURE-002] Gateway 服务配置与验证 (2026-02-02)
   - RSA 密钥生成（PKCS#1 格式）
   - Fingerprint 计算工具 `tools/fingerprint/main.go`
@@ -68,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 变更记录索引
 
 ### 功能变更 (Features)
+- [ECHO-FEATURE-004](features/ECHO-FEATURE-004-message-service.md) - Message 服务实现 (2026-02-03) ✨ NEW
 - [ECHO-FEATURE-003](features/ECHO-FEATURE-003-auth-service.md) - Auth 服务实现 (2026-02-02)
 - [ECHO-FEATURE-002](features/ECHO-FEATURE-002-gateway-config-verification.md) - Gateway 服务配置与验证 (2026-02-02)
 - [ECHO-FEATURE-001](features/ECHO-FEATURE-001-gnet-v2-api-adaptation.md) - gnet v2 API 适配 (2026-02-02)
