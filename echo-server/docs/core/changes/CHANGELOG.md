@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- [ECHO-FEATURE-005] Sync 服务实现（Week 5-6）(2026-02-03) ✨ NEW
+  - 2 个核心 API: getState、getDifference
+  - 铁律 B 核心实现（回放 pending_updates 日志）
+  - 3 个新增文件 + 4 个修改文件
 - [ECHO-FEATURE-004] Message 服务实现（Week 3-4）(2026-02-03)
   - 5 个核心 API: sendMessage、getHistory、getDialogs、readHistory、deleteMessages
   - 遵循铁律 A (原子 pts 分配) 和铁律 B (pending_updates 更新日志)
@@ -74,7 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 变更记录索引
 
 ### 功能变更 (Features)
-- [ECHO-FEATURE-004](features/ECHO-FEATURE-004-message-service.md) - Message 服务实现 (2026-02-03) ✨ NEW
+- [ECHO-FEATURE-005](features/ECHO-FEATURE-005-sync-service.md) - Sync 服务实现 (2026-02-03) ✨ NEW
+- [ECHO-FEATURE-004](features/ECHO-FEATURE-004-message-service.md) - Message 服务实现 (2026-02-03)
 - [ECHO-FEATURE-003](features/ECHO-FEATURE-003-auth-service.md) - Auth 服务实现 (2026-02-02)
 - [ECHO-FEATURE-002](features/ECHO-FEATURE-002-gateway-config-verification.md) - Gateway 服务配置与验证 (2026-02-02)
 - [ECHO-FEATURE-001](features/ECHO-FEATURE-001-gnet-v2-api-adaptation.md) - gnet v2 API 适配 (2026-02-02)

@@ -22,6 +22,7 @@
 |------|------|------|--------|------|
 | **AGENTS.md** | `./AGENTS.md` | AI Agent 规则文档、品牌命名、架构规范 | 🔴 P0 | ✅ 生效 |
 | **ECHO执行方案-精简版.md** | `./ECHO执行方案-精简版.md` | 项目宪法、Week 1-8 计划、生死线 | 🔴 P0 | ✅ 生效 |
+| **ECHO_AUTHORITY_CONSTRAINTS.md** | `./docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md` | 权威约束清单（TL 不可扩展、SSOT、pts/getDifference） | 🔴 P0 | ✅ 生效 |
 | **DOCUMENT_STATUS.md** | `./DOCUMENT_STATUS.md` | 文档状态登记表、权威文档清单 | 🔴 P0 | ✅ 生效 |
 | **QUICK_REFERENCE.md** | `./QUICK_REFERENCE.md` | 快速参考指南 | 🟡 P1 | ✅ 生效 |
 | **QUICK_START.md** | `./QUICK_START.md` | 快速开始指南 | 🟡 P1 | ⚠️ 需更新 |

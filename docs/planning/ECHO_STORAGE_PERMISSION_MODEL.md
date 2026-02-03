@@ -16,6 +16,26 @@
 
 ---
 
+## 🔴 P0 硬约束：不得修改 MTProto / TL schema
+
+Echo 不新增、不修改任何 MTProto/TL schema（包括不新增 TL Update 类型）。
+
+因此：
+- 本文档**禁止**使用 `Update*` 形式命名来描述“客户端可见变化”（这会误导为新增 TL Update）。
+- 任何客户端可见变化必须映射到**既有 Telegram 机制**（例如 `updateDeleteMessages`、`updateChatDefaultBannedRights`、`FILE_REFERENCE_EXPIRED`）。
+
+权威约束详见：`docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md`。
+
+### 术语对照（避免写歪）
+
+| 术语 | 含义 | 载体 |
+|------|------|------|
+| Client-visible change | 客户端必须感知/可回放的一致性变化 | 既有 TL updates / 既有 TL 错误码 / 既有对象字段变更 |
+| Internal event | 服务端内部用于解耦/异步/审计的事件 | `im.xxx.v1`（不是 TL，不下发给客户端） |
+| Replay log | 用于 `getDifference` 回放的更新日志 | `update_log`（或等价 append-only 存储） |
+
+---
+
 ## 🎯 一、设计目标（不可违反）
 
 ### 核心约束
@@ -26,8 +46,8 @@
    - 允许按 Chat / Channel 设置保留策略
 3. **任何存储 / 权限变化**：
    - 必须是服务端状态
-   - 必须产生 Update
-   - 必须可被 getDifference 回放
+   - **若影响客户端可见结果**：必须写入可回放记录（`update_log`），并映射到既有 TL 机制
+   - **若纯内部实现（例如热/冷迁移）**：只允许 internal event + 审计，客户端不需要感知
 4. **v0 阶段**：
    - 不修改客户端
    - 不新增客户端 UI
@@ -53,9 +73,14 @@
 
 ## 🗄️ 三、核心实体定义（服务端）
 
-**⚠️ 重要说明**：本文档中的 `media_objects` 表定义仅用于说明权限模型的概念。
+**实际的媒体存储 Schema 请参考**：`docs/planning/ECHO_MEDIA_STORAGE_STRATEGY.md`（`files` 为唯一真相源）。
 
-**实际的媒体存储 Schema 请参考**：[ECHO_MEDIA_STORAGE_STRATEGY.md](./ECHO_MEDIA_STORAGE_STRATEGY.md) 中的 `files` 表定义（v2.0.0）。
+本文档只定义：
+- Chat 级策略（TTL/可见性/权限）
+- Role/Member 关系
+- 权限校验顺序
+- Client-visible change 的 TL 映射要求
+- Internal event / 审计要求
 
 两个文档的关系：
 - **本文档**：定义权限和策略模型
@@ -146,14 +171,14 @@ CREATE TABLE messages (
     chat_id BIGINT NOT NULL,
     sender_id BIGINT NOT NULL,
     content TEXT,
-    media_id BIGINT,                  -- nullable
+    file_id BIGINT,                   -- nullable，引用 files
     created_at TIMESTAMP DEFAULT NOW(),
     deleted_at TIMESTAMP,             -- nullable，逻辑删除
     ttl_expires_at TIMESTAMP,         -- nullable，根据 chat_storage_policy 计算
     
     FOREIGN KEY (chat_id) REFERENCES chats(id),
     FOREIGN KEY (sender_id) REFERENCES users(id),
-    FOREIGN KEY (media_id) REFERENCES media_objects(media_id),
+    FOREIGN KEY (file_id) REFERENCES files(id),
     
     INDEX idx_chat_created (chat_id, created_at),
     INDEX idx_ttl_expires (ttl_expires_at) WHERE ttl_expires_at IS NOT NULL
@@ -163,62 +188,38 @@ CREATE TABLE messages (
 ### ⚠️ 核心规则
 
 1. **永不直接 DELETE**
-2. **过期 = 写 deleted_at + 生成 Update**
-3. **客户端看到的"消失"，来自 Update，不是静默清理**
+2. **过期 = 写 deleted_at + 写入可回放记录**（`update_log`）
+3. **客户端看到的"消失"，来自既有 TL 机制（删除/编辑/错误码），不是静默清理**
 
 ### 消息过期流程
 
 ```
 1. 定时任务扫描 ttl_expires_at < NOW()
 2. 更新 deleted_at = NOW()
-3. 生成 UpdateMessageDeleted
+3. 写入可回放记录（`update_log`）
 4. 分配 pts
-5. 写入 pending_updates
-6. 推送给在线用户
+5. getDifference 可回放
+6. 在线用户实时推送（如在线）
 ```
 
 ---
 
-## 📁 五、媒体存储模型（高成本点）
+## 📁 五、媒体生命周期与访问（高成本点）
 
-### media_objects 表
+### 核心原则
 
-```sql
-CREATE TABLE media_objects (
-    media_id BIGSERIAL PRIMARY KEY,
-    owner_chat_id BIGINT NOT NULL,
-    storage_class VARCHAR(20) DEFAULT 'hot',  -- hot | cold | archived
-    created_at TIMESTAMP DEFAULT NOW(),
-    expire_at TIMESTAMP,              -- nullable
-    size_bytes BIGINT NOT NULL,
-    ref_count INT DEFAULT 1,          -- 引用计数
-    
-    FOREIGN KEY (owner_chat_id) REFERENCES chats(id),
-    
-    INDEX idx_storage_class (storage_class),
-    INDEX idx_expire_at (expire_at) WHERE expire_at IS NOT NULL
-);
-```
+1. 媒体生命周期状态的唯一真相源：`files`
+2. `messages` 只引用 `file_id`，不存媒体状态
+3. **文件引用失效 / 文件不可用**对客户端的表达必须使用既有机制：
+   - `FILE_REFERENCE_EXPIRED` / `FILE_REFERENCE_EMPTY` / `FILE_REFERENCE_INVALID`（客户端具备刷新能力）
+   - 或（经明确批准后）使用消息删除/编辑的 TL update（例如 `updateDeleteMessages` / `updateEditMessage`）
 
-### 存储类别说明
+### 存储分层（hot/cold/archived）
 
-| 存储类别 | 说明 | 访问速度 | 成本 |
-|---------|------|---------|------|
-| **hot** | 热存储 | 快 | 高 |
-| **cold** | 冷存储 | 中 | 中 |
-| **archived** | 归档存储 | 慢 | 低 |
-
-### 存储迁移规则
-
-```
-v0: 统一 hot
-v1: hot → cold → archived
-v2: 可选物理删除（仅 archived 且 ref_count=0）
-```
-
-### ⚠️ 核心规则
-
-**所有阶段迁移必须产生 UpdateMediaStateChanged**
+存储分层是纯内部实现：
+- 允许 internal event（例如 `im.media.storage.tier.changed.v1`）
+- 允许审计记录
+- **不要求客户端感知**，也不允许伪造“自定义 TL Update”
 
 ---
 
@@ -273,24 +274,29 @@ function checkPermission(userId: number, chatId: number, action: string): boolea
 
 ---
 
-## 🔄 七、Update 与一致性（生死线）
+## 🔄 七、客户端可见变化与一致性（生死线）
 
-### 必须生成 Update 的行为
+### 必须可回放的行为（Client-visible change）
 
-以下行为必须生成 Update：
-1. **消息过期（TTL）** → `UpdateMessageDeleted`
-2. **媒体状态迁移** → `UpdateMediaStateChanged`
-3. **权限策略变更** → `UpdateChatPermissionPolicy`
-4. **历史可见性变更** → `UpdateChatStoragePolicy`
+以下行为一旦启用并对客户端产生可见影响，必须：写入 `update_log` + 可被 `getDifference` 回放 + 映射到既有 TL 机制：
 
-### Update 必须满足的条件
+1. **消息过期（TTL）**
+   - TL 映射：`updateDeleteMessages` / `updateDeleteChannelMessages`
+2. **权限策略变更（禁言/限制）**
+   - TL 映射：`updateChatDefaultBannedRights` + `chatBannedRights`（语义是“禁止”，注意取反）
+
+说明：
+- **媒体热/冷迁移**默认属于内部实现，不属于 client-visible change
+- **媒体不可下载**优先使用 `FILE_REFERENCE_*` 错误族表达（不新增 TL update）
+
+### 回放必须满足的条件
 
 ```typescript
-interface UpdateRequirements {
+interface ReplayRequirements {
   // 1. 分配 pts
   pts: number;
   
-  // 2. 写入 update_log
+  // 2. 写入 update_log（或等价 append-only 日志）
   writeToUpdateLog: boolean;
   
   // 3. 支持 getDifference 回放
@@ -304,38 +310,13 @@ interface UpdateRequirements {
 - ❌ 不生成 Update 的"静默清理"
 - ❌ 绕过 pts 机制的状态变更
 
-### Update 示例
+### TL 映射示例（只列方向，不新增 schema）
 
-```typescript
-// 消息过期 Update
-interface UpdateMessageDeleted {
-  _: 'updateMessageDeleted';
-  pts: number;
-  pts_count: number;
-  messages: number[];           // 被删除的消息 ID 列表
-  chat_id: number;
-  reason: 'ttl_expired';        // 删除原因
-}
-
-// 媒体状态变更 Update
-interface UpdateMediaStateChanged {
-  _: 'updateMediaStateChanged';
-  pts: number;
-  pts_count: number;
-  media_id: number;
-  old_state: 'hot' | 'cold' | 'archived';
-  new_state: 'hot' | 'cold' | 'archived';
-}
-
-// 权限策略变更 Update
-interface UpdateChatPermissionPolicy {
-  _: 'updateChatPermissionPolicy';
-  pts: number;
-  pts_count: number;
-  chat_id: number;
-  policy: ChatPermissionPolicy;
-}
-```
+| 场景 | Client-visible change | 既有 TL 机制 |
+|------|------------------------|--------------|
+| 消息 TTL 过期 | 消息在对话中消失 | `updateDeleteMessages` / `updateDeleteChannelMessages` |
+| 禁止发送媒体 | 客户端 UI 需同步变灰 + 服务端强制拒绝 | `updateChatDefaultBannedRights` + `chatBannedRights.send_media` |
+| 文件引用过期 | 客户端刷新 file_reference 后重试 | 错误码：`FILE_REFERENCE_EXPIRED`/`FILE_REFERENCE_EMPTY`/`FILE_REFERENCE_INVALID` |
 
 ---
 
@@ -431,23 +412,21 @@ CREATE TABLE chat_member_role (
 -- 4. 消息表扩展（添加字段）
 ALTER TABLE messages ADD COLUMN deleted_at TIMESTAMP;
 ALTER TABLE messages ADD COLUMN ttl_expires_at TIMESTAMP;
+ALTER TABLE messages ADD COLUMN file_id BIGINT;
 CREATE INDEX idx_messages_ttl_expires ON messages(ttl_expires_at) WHERE ttl_expires_at IS NOT NULL;
 
--- 5. 媒体对象表
-CREATE TABLE media_objects (
-    media_id BIGSERIAL PRIMARY KEY,
-    owner_chat_id BIGINT NOT NULL,
-    storage_class VARCHAR(20) DEFAULT 'hot',
-    created_at TIMESTAMP DEFAULT NOW(),
-    expire_at TIMESTAMP,
-    size_bytes BIGINT NOT NULL,
-    ref_count INT DEFAULT 1,
-    
-    FOREIGN KEY (owner_chat_id) REFERENCES chats(id),
-    CHECK (storage_class IN ('hot', 'cold', 'archived')),
-    INDEX idx_storage_class (storage_class),
-    INDEX idx_expire_at (expire_at) WHERE expire_at IS NOT NULL
-);
+-- 5. 媒体存储（权威 Schema）
+-- files 表为唯一真相源，详见：docs/planning/ECHO_MEDIA_STORAGE_STRATEGY.md
+--
+-- 如果未来需要引用计数/去重，优先使用 files.ref_count 或 file_refs 表，而不是新增 media_objects。
+-- 示例（可选）：
+-- CREATE TABLE file_refs (
+--     file_id     BIGINT NOT NULL REFERENCES files(id),
+--     owner_type  VARCHAR(20) NOT NULL,   -- message/chat/square...
+--     owner_id    BIGINT NOT NULL,
+--     created_at  TIMESTAMP DEFAULT NOW(),
+--     PRIMARY KEY (file_id, owner_type, owner_id)
+-- );
 
 -- 6. 策略变更历史表（审计）
 CREATE TABLE policy_change_history (
@@ -475,14 +454,14 @@ CREATE TABLE policy_change_history (
 - [ ] 创建所有数据库表
 - [ ] 实现权限校验逻辑
 - [ ] 实现 TTL 计算逻辑
-- [ ] 实现 Update 生成逻辑
+- [ ] 实现 client-visible change 的 TL 映射 + update_log 可回放
 - [ ] 不暴露给客户端
 - [ ] 不添加 UI
 
 **验收标准**:
 - 数据库表创建成功
 - 权限校验逻辑可用
-- TTL 过期生成 Update
+- TTL 过期可回放（update_log + TL 删除机制）
 - getDifference 可回放
 
 ### Phase 1: v1 启用（未来）
@@ -511,9 +490,8 @@ CREATE TABLE policy_change_history (
 
 - [ ] **数据库表创建成功**
 - [ ] **权限校验逻辑正确**
-- [ ] **TTL 过期生成 Update**
-- [ ] **媒体状态迁移生成 Update**
-- [ ] **策略变更生成 Update**
+- [ ] **TTL 过期可回放（update_log + TL 删除机制）**
+- [ ] **策略变更可回放（update_log + TL 权限机制）**
 - [ ] **getDifference 可回放所有变更**
 - [ ] **客户端不感知（v0 阶段）**
 
@@ -530,13 +508,12 @@ CREATE TABLE policy_change_history (
 1. 等待 24 小时
 2. 定时任务扫描过期消息
 3. 更新 M1.deleted_at = NOW()
-4. 生成 UpdateMessageDeleted
+4. 写入 update_log（可回放）并触发 TL 删除机制（`updateDeleteMessages` / `updateDeleteChannelMessages`）
 5. 推送给在线用户
 
 预期结果：
 - M1.deleted_at 不为空
-- 生成了 UpdateMessageDeleted
-- Update 有正确的 pts
+- update_log 有对应记录，pts 正确
 - 客户端收到 Update（如果在线）
 - getDifference 可以回放这个删除
 ```
@@ -550,33 +527,32 @@ CREATE TABLE policy_change_history (
 
 操作步骤：
 1. 群主将 Chat A 的 can_send_media 改为 false
-2. 生成 UpdateChatPermissionPolicy
+2. 写入策略变更审计 + 写入 update_log（可回放）
+3. TL 映射：`updateChatDefaultBannedRights`（携带 `chatBannedRights`）
 3. 用户 B 尝试发送图片
 
 预期结果：
-- 策略变更生成了 Update
-- Update 有正确的 pts
+- 策略变更可回放（update_log + pts 正确）
 - 用户 B 发送图片失败
 - 返回 PERMISSION_DENIED 错误
 ```
 
-#### 场景 3：媒体存储迁移
+#### 场景 3：媒体存储迁移（内部实现，不要求客户端感知）
 
 ```
 前置条件：
-- Media M1 的 storage_class = 'hot'
-- M1 创建时间 > 30 天
+- File F1 处于 hot（内部存储分层）
+- F1 创建时间 > 30 天
 
 操作步骤：
-1. 定时任务扫描需要迁移的媒体
-2. 更新 M1.storage_class = 'cold'
-3. 生成 UpdateMediaStateChanged
+1. 定时任务扫描需要迁移的文件
+2. 将文件迁移至 cold（内部实现）
+3. 记录 internal event（例如 im.media.storage.tier.changed.v1）+ 审计
 
 预期结果：
-- M1.storage_class = 'cold'
-- 生成了 UpdateMediaStateChanged
-- Update 有正确的 pts
-- getDifference 可以回放这个变更
+- 客户端无感知
+- 下载仍正常（可能延迟增加，但协议语义不变）
+- 不产生任何“自定义 TL Update”
 ```
 
 ---
@@ -588,6 +564,7 @@ CREATE TABLE policy_change_history (
 - **功能路线图**: `docs/planning/ECHO_FEATURE_ROADMAP.md`
 - **管理后台规划**: `docs/planning/ECHO_ADMIN_PANEL.md`
 - **广场功能设计**: `docs/planning/ECHO_SQUARE_DESIGN.md`
+- **权威约束清单**: `docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md`
 
 ---
 
@@ -602,4 +579,3 @@ CREATE TABLE policy_change_history (
 **最后更新**: 2026-02-03  
 **文档状态**: 📝 规划中  
 **下一步**: 等待审核和批准，确定实施时间
-

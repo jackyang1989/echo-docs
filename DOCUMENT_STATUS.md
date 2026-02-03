@@ -20,6 +20,7 @@
 |------|------|------|---------|
 | **AGENTS.md** | `./AGENTS.md` | v1.6.0 | AI Agent 规则、品牌命名、架构铁律 |
 | **ECHO执行方案-精简版.md** | `./ECHO执行方案-精简版.md` | v5.0 | 项目宪法、Week 1-8 计划、P0 接口清单、生死线（updates/pts/getDifference） |
+| **ECHO_AUTHORITY_CONSTRAINTS.md** | `./docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md` | v1.0.0 | 权威约束清单（TL 不可扩展、SSOT、事件分层、验收门禁） |
 
 ### 🟠 开发计划（分阶段权威）
 

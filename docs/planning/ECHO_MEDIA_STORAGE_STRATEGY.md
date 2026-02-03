@@ -756,63 +756,62 @@ func ScanExpiredFiles() {
         // 2. 更新文件状态
         db.Exec(`UPDATE files SET status = 1 WHERE id = ?`, file.ID)
         
-        // 3. ⚠️ 关键：生成 Update 事件
-        GenerateFileExpiredUpdate(file.ID)
+        // 3. 记录 internal event + 审计（不是 TL Update，不下发给客户端）
+        EmitInternalEvent("im.media.lifecycle.expired.v1", map[string]any{"file_id": file.ID})
     }
 }
 ```
 
 ---
 
-### 步骤 2：生成 Update 并进入 update_log
+### 步骤 2：对外行为（TL 兼容，不新增 TL Update）
+
+默认推荐策略：
+- **消息保留不变**（不删除、不编辑）
+- **媒体按需下载失败**（客户端请求文件时再判断是否可用）
+
+关键点：
+- `files` 是生命周期唯一真相源
+- 不允许伪造 `UpdateMessageMediaExpired` 之类的“自定义 TL Update”
+- 服务端应使用 Telegram 既有错误码表达
+  - `FILE_REFERENCE_EXPIRED` / `FILE_REFERENCE_EMPTY` / `FILE_REFERENCE_INVALID`（触发客户端刷新 file reference）
+  - 或 `FILE_ID_INVALID` / `LOCATION_INVALID`（文件已不可用/不可定位）
+
+客户端侧证据：
+- Android 客户端会识别 `FILE_REFERENCE_*` 错误并触发刷新逻辑：
+  - `echo-android-client/TMessagesProj/src/main/java/com/echo/messenger/FileRefController.java`（`isFileRefError`）
+
+伪代码示例：
 
 ```go
-func GenerateFileExpiredUpdate(fileID int64) {
-    // 1. 找到引用该文件的所有消息
-    messages := db.Query(`
-        SELECT id, from_user_id, peer_type, peer_id 
-        FROM messages 
-        WHERE file_id = ?
-    `, fileID)
-    
-    for _, msg := range messages {
-        // 2. 为每个对话生成 Update
-        update := &UpdateMessageMediaExpired{
-            MessageID: msg.ID,
-            FileID:    fileID,
-        }
-        
-        // 3. ⚠️ 关键：分配 pts 并写入 update_log
-        pts := AllocatePts(msg.FromUserID)
-        WriteUpdateLog(msg.FromUserID, pts, update)
-        
-        // 4. 在线推送
-        PushUpdateToOnlineSessions(msg.FromUserID, pts, update)
+func GetFile(fileID int64, fileReference []byte) ([]byte, error) {
+    f := db.QueryRow(`SELECT status, expires_at, storage_path FROM files WHERE id = ?`, fileID)
+
+    // 1) 文件已过期/删除：返回 TL 兼容错误码
+    if f.Status != 0 {
+        return nil, mtproto.ErrFileIdInvalid
     }
+
+    // 2) file_reference 过期：返回 FILE_REFERENCE_EXPIRED 让客户端刷新
+    if !IsValidFileReference(fileReference) {
+        return nil, mtproto.ErrFileReferenceExpired
+    }
+
+    // 3) 正常读取对象存储
+    return minio.GetObject(f.StoragePath)
 }
 ```
 
 ---
 
-### 步骤 3：客户端通过 getDifference 回放
+### 步骤 3：如需“可见变化”，必须走 updates/pts/getDifference
 
-```go
-func GetDifference(userID int64, pts int) *Updates {
-    // 1. 从 update_log 读取 pts 之后的所有 updates
-    updates := db.Query(`
-        SELECT pts, update_type, update_data 
-        FROM pending_updates 
-        WHERE user_id = ? AND pts > ?
-        ORDER BY pts
-    `, userID, pts)
-    
-    // 2. 返回给客户端
-    return &Updates{
-        Updates: updates,
-        // ...
-    }
-}
-```
+如果未来决定让客户端“主动看到变化”（例如删除消息/编辑为占位符），则必须：
+- 使用既有 TL 更新机制（例如 `updateDeleteMessages` / `updateEditMessage`）
+- 写入 `update_log`
+- 保证 `getDifference` 可回放
+
+默认策略（下载失败）不要求额外 TL update，但要求审计与可追溯（internal event + logs）。
 
 ---
 
@@ -823,7 +822,7 @@ func GetDifference(userID int64, pts int) *Updates {
 1. **files 表是唯一真相源**：文件状态只在 files 表
 2. **messages 只存引用**：不存 media_status，避免矛盾
 3. **统计量可重算**：storage_used_bytes 用异步统计
-4. **任何可见变化走 updates**：分配 pts，写 update_log
+4. **任何客户端可见变化走既有 TL 机制 + 可回放日志**：需要时分配 pts，写 update_log
 
 ### ❌ 错误的做法
 
