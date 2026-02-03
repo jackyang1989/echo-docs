@@ -53,6 +53,16 @@
 
 ## 🗄️ 三、核心实体定义（服务端）
 
+**⚠️ 重要说明**：本文档中的 `media_objects` 表定义仅用于说明权限模型的概念。
+
+**实际的媒体存储 Schema 请参考**：[ECHO_MEDIA_STORAGE_STRATEGY.md](./ECHO_MEDIA_STORAGE_STRATEGY.md) 中的 `files` 表定义（v2.0.0）。
+
+两个文档的关系：
+- **本文档**：定义权限和策略模型
+- **ECHO_MEDIA_STORAGE_STRATEGY.md**：定义实际的存储 Schema（权威来源）
+
+---
+
 ### 3.1 Chat / Channel 级别
 
 #### chat_storage_policy（存储策略表）

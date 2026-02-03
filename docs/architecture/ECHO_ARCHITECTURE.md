@@ -18,9 +18,10 @@
                         ↓ MTProto 2.0
 ┌─────────────────────────────────────────────────────────┐
 │  Layer 2: 核心 IM 层 (Core IM Layer)                     │
-│  - Echo Server (Go)                                 │
+│  - Echo Server (Go) - 100% 自研业务层                │
+│  - 复用 Teamgram Gateway 处理 MTProto 协议            │
 │  - 基础消息、群组、文件功能                                │
-│  - 不修改源码，保持可升级性                                │
+│  - 对齐 MTProto 协议和 Telegram 客户端期望              │
 └─────────────────────────────────────────────────────────┘
                         ↓ HTTP/gRPC/Kafka
 ┌─────────────────────────────────────────────────────────┐
@@ -648,7 +649,7 @@ Mac 本地:
 ```
 VPS 1: Echo Server
   - Docker Swarm / Kubernetes
-  - MySQL (主从复制)
+  - PostgreSQL (主从复制)
   - Redis (哨兵模式)
   - MinIO (分布式)
   - Kafka (3节点)
