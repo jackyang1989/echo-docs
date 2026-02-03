@@ -91,8 +91,8 @@ echo-docs/
 - `docs/architecture/ARCHITECTURE_DEPLOYMENT.md` - 架构与部署
 
 **已归档的旧版架构文档**（与 v5 执行方案冲突）：
-- `docs/archive/ECHO_ARCHITECTURE.md` - 旧版架构设计
-- `docs/archive/ECHO_DESIGN_PRINCIPLES.md` - 旧版设计原则
+- `docs/archive/ECHO_ARCHITECTURE.md` - 旧版架构设计（已归档）
+- `docs/archive/ECHO_DESIGN_PRINCIPLES.md` - 旧版设计原则（已归档）
 
 ### 品牌文档
 - `docs/branding/ECHO_BRANDING_GUIDE.md` - 品牌指南
@@ -111,8 +111,13 @@ echo-docs/
 - `docs/planning/ECHO_STORAGE_PERMISSION_MODEL.md` - 存储与权限模型
 
 **已归档的旧版规划文档**：
-- `docs/archive/ECHO_DEVELOPMENT_ROADMAP.md` - 旧版开发路线图（1月版本）
-- `docs/archive/NEXT_STEPS.md` - 一次性操作指南
+- `docs/archive/ECHO_DEVELOPMENT_ROADMAP.md` - 旧版开发路线图（1月版本，已归档）
+- `docs/archive/NEXT_STEPS.md` - 一次性操作指南（已归档）
+- `docs/archive/ECHO_COMPLETE_DEVELOPMENT_PLAN.md` - 旧版开发计划（已归档）
+- `docs/archive/ECHO_COMPLETE_PLANNING_SUMMARY.md` - 旧版规划总结（已归档）
+- `docs/archive/ECHO_SERVER_REBUILD_PLAN.md` - 服务端重建计划（已归档）
+- `docs/archive/ECHO_CLIENT_DEVELOPMENT_GUIDE.md` - 客户端开发指南（已归档）
+- `docs/archive/ECHO_START_HERE.md` - 旧版入门指南（已归档）
 
 ### 参考文档
 - `docs/reference/ECHO_ANDROID_CLIENT_REBRAND.md` - Android 客户端重命名

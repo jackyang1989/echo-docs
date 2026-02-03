@@ -26,7 +26,7 @@
 | 文档 | 路径 | 版本 | 职责范围 |
 |------|------|------|---------|
 | **ECHO执行方案-精简版.md** | `./ECHO执行方案-精简版.md` | v5.0 | **Week 1-8 详细计划**（更详细的代码示例和验收标准） |
-| **ECHO_DEVELOPMENT_PLAN_V2.md** | 主仓库 `/echo/ECHO_DEVELOPMENT_PLAN_V2.md`<br>[GitHub 链接](https://github.com/jackyang1989/echo/blob/main/ECHO_DEVELOPMENT_PLAN_V2.md) | v2.0 | **Week 9-36 计划**（IM 增强、推送、后台、广场） |
+| **ECHO_DEVELOPMENT_PLAN_V2.md** | 主仓库文件（不在 echo-docs 中）<br>路径：`/echo/ECHO_DEVELOPMENT_PLAN_V2.md`<br>[GitHub 链接](https://github.com/jackyang1989/echo/blob/main/ECHO_DEVELOPMENT_PLAN_V2.md) | v2.0 | **Week 9-36 计划**（IM 增强、推送、后台、广场） |
 
 ### 🟡 功能规划（生效中）
 
@@ -80,11 +80,16 @@
 
 | 优先级 | 文档 | 行动 | 状态 |
 |--------|------|------|------|
-| P0 | ECHO_DESIGN_PRINCIPLES.md | 归档或与 v5 对齐 | ✅ 已完成 |
-| P0 | ECHO_ARCHITECTURE.md | 归档或与 v5 对齐 | ✅ 已完成 |
-| P1 | ECHO_DEVELOPMENT_ROADMAP.md | 归档 | ✅ 已完成 |
-| P1 | NEXT_STEPS.md | 归档 | ✅ 已完成 |
-| P2 | QUICK_START.md | 更新为 PostgreSQL 基线 | ✅ 已完成 |
+| P0 | ECHO_DESIGN_PRINCIPLES.md | 归档或与 v5 对齐 | ✅ 已完成（已归档） |
+| P0 | ECHO_ARCHITECTURE.md | 归档或与 v5 对齐 | ✅ 已完成（已归档） |
+| P1 | ECHO_DEVELOPMENT_ROADMAP.md | 归档 | ✅ 已完成（已归档） |
+| P1 | NEXT_STEPS.md | 归档 | ✅ 已完成（已归档） |
+| P2 | QUICK_START.md | 更新为 PostgreSQL 基线 | ✅ 已完成（已修复） |
+| P2 | ECHO_COMPLETE_DEVELOPMENT_PLAN.md | 归档 | ✅ 已完成（已归档） |
+| P2 | ECHO_COMPLETE_PLANNING_SUMMARY.md | 归档 | ✅ 已完成（已归档） |
+| P2 | ECHO_SERVER_REBUILD_PLAN.md | 归档 | ✅ 已完成（已归档） |
+| P2 | ECHO_CLIENT_DEVELOPMENT_GUIDE.md | 归档 | ✅ 已完成（已归档） |
+| P2 | ECHO_START_HERE.md | 归档 | ✅ 已完成（已归档） |
 
 ---
 
