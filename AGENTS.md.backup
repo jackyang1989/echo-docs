@@ -469,7 +469,7 @@ Echo 项目的核心开发文档集中存放在 `docs/core/` 目录，**严禁�
 ### 📁 核心文档目录结构
 
 ```
-./echo-server/docs/core/                 # Echo 服务端核心文档（100% 自研）
+echo-server/docs/core/                 # Echo 服务端核心文档（100% 自研）
 ├── README.md                          # 核心文档索引和保护规则
 ├── changes/                           # 代码变更记录（最重要）
 │   ├── CHANGELOG.md                  # 变更总览
@@ -492,7 +492,7 @@ Echo 项目的核心开发文档集中存放在 `docs/core/` 目录，**严禁�
     ├── commit-conventions.md         # 提交规范
     └── review-checklist.md           # 审查清单
 
-./echo-android-client/docs/core/         # Android 客户端核心文档
+echo-android-client/docs/core/         # Android 客户端核心文档
 ├── README.md                          # 核心文档索引和保护规则
 ├── changes/                           # 代码变更记录（最重要）
 │   ├── CHANGELOG.md                  # 变更总览
@@ -526,22 +526,22 @@ Echo 项目的核心开发文档集中存放在 `docs/core/` 目录，**严禁�
 
 | 文档类型 | 路径 | 说明 | 重要性 |
 |---------|------|------|--------|
-| 核心文档索引 | `./echo-server/docs/core/README.md` | 核心文档目录说明和保护规则 | 🔴 必读 |
-| 变更总览 | `./echo-server/docs/core/changes/CHANGELOG.md` | 所有变更的时间线和版本历史 | 🔴 必读 |
-| 变更记录指南 | `./echo-server/docs/core/changes/README.md` | 如何创建和维护变更记录 | 🔴 必读 |
-| 功能变更模板 | `./echo-server/docs/core/changes/features/ECHO-FEATURE-TEMPLATE.md` | 新功能变更记录模板 | 🔴 必用 |
-| 功能变更记录 | `./echo-server/docs/core/changes/features/ECHO-FEATURE-XXX-*.md` | 具体功能的详细记录 | 🔴 核心资产 |
-| Bug 修复记录 | `./echo-server/docs/core/changes/bugfixes/ECHO-BUG-XXX-*.md` | Bug 修复的详细记录 | 🔴 核心资产 |
-| 优化记录 | `./echo-server/docs/core/changes/optimizations/ECHO-OPT-XXX-*.md` | 性能优化的详细记录 | 🔴 核心资产 |
-| 上游合并报告 | `./echo-server/docs/core/changes/merge-reports/merge-teamgram-gateway-vX.X.X.md` | Teamgram Gateway 更新合并报告 | 🔴 核心资产 |
-| **架构设计** | `./echo-server/docs/core/architecture/` | **架构设计文档** | **🔴 核心资产** |
-| 系统架构设计 | `./echo-server/docs/core/architecture/system-design.md` | 自研架构、数据流转、服务通信 | 🔴 必读 |
-| 模块设计文档 | `./echo-server/docs/core/architecture/module-design.md` | 模块职责、依赖关系、扩展指南 | 🔴 必读 |
-| API 契约文档 | `./echo-server/docs/core/architecture/api-contracts.md` | 版本化策略、接口规范、错误码 | 🔴 必读 |
-| **开发规范** | `./echo-server/docs/core/standards/` | **开发规范文档** | **🔴 核心资产** |
-| 编码规范 | `./echo-server/docs/core/standards/coding-standards.md` | Go 代码编写规范 | 🔴 必读 |
-| 提交规范 | `./echo-server/docs/core/standards/commit-conventions.md` | Git 提交消息规范 | 🔴 必读 |
-| 审查清单 | `./echo-server/docs/core/standards/review-checklist.md` | PR 审查必查项（10 大类别） | 🔴 必读 |
+| 核心文档索引 | `echo-server/docs/core/README.md` | 核心文档目录说明和保护规则 | 🔴 必读 |
+| 变更总览 | `echo-server/docs/core/changes/CHANGELOG.md` | 所有变更的时间线和版本历史 | 🔴 必读 |
+| 变更记录指南 | `echo-server/docs/core/changes/README.md` | 如何创建和维护变更记录 | 🔴 必读 |
+| 功能变更模板 | `echo-server/docs/core/changes/features/ECHO-FEATURE-TEMPLATE.md` | 新功能变更记录模板 | 🔴 必用 |
+| 功能变更记录 | `echo-server/docs/core/changes/features/ECHO-FEATURE-XXX-*.md` | 具体功能的详细记录 | 🔴 核心资产 |
+| Bug 修复记录 | `echo-server/docs/core/changes/bugfixes/ECHO-BUG-XXX-*.md` | Bug 修复的详细记录 | 🔴 核心资产 |
+| 优化记录 | `echo-server/docs/core/changes/optimizations/ECHO-OPT-XXX-*.md` | 性能优化的详细记录 | 🔴 核心资产 |
+| 上游合并报告 | `echo-server/docs/core/changes/merge-reports/merge-teamgram-gateway-vX.X.X.md` | Teamgram Gateway 更新合并报告 | 🔴 核心资产 |
+| **架构设计** | `echo-server/docs/core/architecture/` | **架构设计文档** | **🔴 核心资产** |
+| 系统架构设计 | `echo-server/docs/core/architecture/system-design.md` | 自研架构、数据流转、服务通信 | 🔴 必读 |
+| 模块设计文档 | `echo-server/docs/core/architecture/module-design.md` | 模块职责、依赖关系、扩展指南 | 🔴 必读 |
+| API 契约文档 | `echo-server/docs/core/architecture/api-contracts.md` | 版本化策略、接口规范、错误码 | 🔴 必读 |
+| **开发规范** | `echo-server/docs/core/standards/` | **开发规范文档** | **🔴 核心资产** |
+| 编码规范 | `echo-server/docs/core/standards/coding-standards.md` | Go 代码编写规范 | 🔴 必读 |
+| 提交规范 | `echo-server/docs/core/standards/commit-conventions.md` | Git 提交消息规范 | 🔴 必读 |
+| 审查清单 | `echo-server/docs/core/standards/review-checklist.md` | PR 审查必查项（10 大类别） | 🔴 必读 |
 
 #### Teamgram 参考项目 (echo-server-source)
 
@@ -622,7 +622,7 @@ Echo 项目的核心开发文档集中存放在 `docs/core/` 目录，**严禁�
 - 防止误删核心文档
 
 **正确做法**：
-- 临时文档 → 放在 `./docs/temp/` 或个人目录
+- 临时文档 → 放在 `docs/temp/` 或个人目录
 - 运营文档 → 放在 `docs/operations/`
 - 测试报告 → 放在 `docs/testing/`
 - 部署文档 → 放在项目根目录或 `docs/deployment/`
@@ -643,21 +643,21 @@ Echo 项目的核心开发文档集中存放在 `docs/core/` 目录，**严禁�
 1. **查阅变更总览**
    ```bash
    # Echo 服务端（100% 自研）
-   cat ./echo-server/docs/core/changes/CHANGELOG.md
+   cat echo-server/docs/core/changes/CHANGELOG.md
    
    # Android 客户端
-   cat ./echo-android-client/docs/core/changes/CHANGELOG.md
+   cat echo-android-client/docs/core/changes/CHANGELOG.md
    ```
 
 2. **检查是否有类似功能**
    ```bash
    # 搜索相关功能记录
-   grep -r "关键词" ./echo-server/docs/core/changes/features/
+   grep -r "关键词" echo-server/docs/core/changes/features/
    ```
 
 3. **阅读变更记录指南**
    ```bash
-   cat ./echo-server/docs/core/changes/README.md
+   cat echo-server/docs/core/changes/README.md
    ```
 
 #### 开发中必须做的事
@@ -665,8 +665,8 @@ Echo 项目的核心开发文档集中存放在 `docs/core/` 目录，**严禁�
 1. **创建变更记录**
    ```bash
    # 复制模板
-   cp ./echo-server/docs/core/changes/features/ECHO-FEATURE-TEMPLATE.md \
-      ./echo-server/docs/core/changes/features/ECHO-FEATURE-XXX-功能名.md
+   cp echo-server/docs/core/changes/features/ECHO-FEATURE-TEMPLATE.md \
+      echo-server/docs/core/changes/features/ECHO-FEATURE-XXX-功能名.md
    ```
 
 2. **实时更新变更记录**
@@ -704,16 +704,16 @@ Echo 项目的核心开发文档集中存放在 `docs/core/` 目录，**严禁�
 #### 按功能名称查找
 ```bash
 # Echo 服务端（100% 自研）
-grep -r "功能名称" ./echo-server/docs/core/changes/features/
+grep -r "功能名称" echo-server/docs/core/changes/features/
 
 # Android 客户端
-grep -r "功能名称" ./echo-android-client/docs/core/changes/features/
+grep -r "功能名称" echo-android-client/docs/core/changes/features/
 ```
 
 #### 按文件路径查找
 ```bash
 # 查找修改了某个文件的所有变更
-grep -r "ChatActivity.java" ./echo-android-client/docs/core/changes/
+grep -r "ChatActivity.java" echo-android-client/docs/core/changes/
 ```
 
 #### 按变更 ID 查找
@@ -725,7 +725,7 @@ find . -name "ECHO-FEATURE-001-*.md"
 #### 按日期查找
 ```bash
 # 查找某个日期的所有变更
-grep -r "2026-01-30" ./echo-server/docs/core/changes/
+grep -r "2026-01-30" echo-server/docs/core/changes/
 ```
 
 ---
@@ -737,17 +737,17 @@ grep -r "2026-01-30" ./echo-server/docs/core/changes/
 ```bash
 # Echo 服务端统计（100% 自研）
 echo "=== Echo Server 核心文档统计 ==="
-echo "功能数量: $(ls -1 ./echo-server/docs/core/changes/features/ECHO-FEATURE-*.md 2>/dev/null | wc -l)"
-echo "Bug 修复: $(ls -1 ./echo-server/docs/core/changes/bugfixes/ECHO-BUG-*.md 2>/dev/null | wc -l)"
-echo "性能优化: $(ls -1 ./echo-server/docs/core/changes/optimizations/ECHO-OPT-*.md 2>/dev/null | wc -l)"
-echo "上游合并: $(ls -1 ./echo-server/docs/core/changes/merge-reports/merge-*.md 2>/dev/null | wc -l)"
+echo "功能数量: $(ls -1 echo-server/docs/core/changes/features/ECHO-FEATURE-*.md 2>/dev/null | wc -l)"
+echo "Bug 修复: $(ls -1 echo-server/docs/core/changes/bugfixes/ECHO-BUG-*.md 2>/dev/null | wc -l)"
+echo "性能优化: $(ls -1 echo-server/docs/core/changes/optimizations/ECHO-OPT-*.md 2>/dev/null | wc -l)"
+echo "上游合并: $(ls -1 echo-server/docs/core/changes/merge-reports/merge-*.md 2>/dev/null | wc -l)"
 
 # Android 客户端统计
 echo "=== Echo Android Client 核心文档统计 ==="
-echo "功能数量: $(ls -1 ./echo-android-client/docs/core/changes/features/ECHO-FEATURE-*.md 2>/dev/null | wc -l)"
-echo "Bug 修复: $(ls -1 ./echo-android-client/docs/core/changes/bugfixes/ECHO-BUG-*.md 2>/dev/null | wc -l)"
-echo "性能优化: $(ls -1 ./echo-android-client/docs/core/changes/optimizations/ECHO-OPT-*.md 2>/dev/null | wc -l)"
-echo "上游合并: $(ls -1 ./echo-android-client/docs/core/changes/merge-reports/merge-*.md 2>/dev/null | wc -l)"
+echo "功能数量: $(ls -1 echo-android-client/docs/core/changes/features/ECHO-FEATURE-*.md 2>/dev/null | wc -l)"
+echo "Bug 修复: $(ls -1 echo-android-client/docs/core/changes/bugfixes/ECHO-BUG-*.md 2>/dev/null | wc -l)"
+echo "性能优化: $(ls -1 echo-android-client/docs/core/changes/optimizations/ECHO-OPT-*.md 2>/dev/null | wc -l)"
+echo "上游合并: $(ls -1 echo-android-client/docs/core/changes/merge-reports/merge-*.md 2>/dev/null | wc -l)"
 ```
 
 ---
@@ -1006,9 +1006,9 @@ Echo 项目采用**自动化强制执行机制**，确保所有 AI Agent 和开�
 
 - **强制执行机制详解**: [ECHO_AI_AGENT_ENFORCEMENT.md](./ECHO_AI_AGENT_ENFORCEMENT.md)
 - **强制执行实施总结**: [ECHO_ENFORCEMENT_SUMMARY.md](./ECHO_ENFORCEMENT_SUMMARY.md)
-- **核心文档索引**: [./echo-server/docs/core/README.md](././echo-server/docs/core/README.md)
-- **变更记录指南**: [./echo-server/docs/core/changes/README.md](././echo-server/docs/core/changes/README.md)
-- **审查清单**: [./echo-server/docs/core/standards/review-checklist.md](././echo-server/docs/core/standards/review-checklist.md)
+- **核心文档索引**: [echo-server/docs/core/README.md](./echo-server/docs/core/README.md)
+- **变更记录指南**: [echo-server/docs/core/changes/README.md](./echo-server/docs/core/changes/README.md)
+- **审查清单**: [echo-server/docs/core/standards/review-checklist.md](./echo-server/docs/core/standards/review-checklist.md)
 
 ---
 
@@ -2027,7 +2027,7 @@ CREATE TABLE quick_reply_templates (
 所有变更记录必须存放在以下位置：
 
 ```
-./echo-server/docs/core/changes/
+echo-server/docs/core/changes/
   ├── CHANGELOG.md                    # 变更总览
   ├── README.md                       # 使用指南
   ├── features/
@@ -2045,7 +2045,7 @@ CREATE TABLE quick_reply_templates (
       ├── merge-teamgram-gateway-v1.3.0.md
       └── ...
 
-./echo-android-client/docs/core/changes/
+echo-android-client/docs/core/changes/
   ├── CHANGELOG.md                    # 变更总览
   ├── README.md                       # 使用指南
   ├── features/
@@ -2090,7 +2090,7 @@ CREATE TABLE quick_reply_templates (
   - 安装指南
   - 使用手册
   - FAQ
-  - 临时文档（建议放在 `./docs/temp/`）
+  - 临时文档（建议放在 `docs/temp/`）
 
 - **项目根目录** - 项目级文档
   - `AGENTS.md` - 品牌命名规则和架构规范（🔴 核心）
