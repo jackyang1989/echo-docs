@@ -8,7 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- [ECHO-FEATURE-005] Sync 服务实现（Week 5-6）(2026-02-03) ✨ NEW
+- [ECHO-FEATURE-006] Week 5-6 E2E 集成测试报告 (2026-02-03) ✨ NEW
+  - HTTP API 全链路测试通过（Auth/Message/Sync）
+  - 铁律 A & B 验证成功
+  - Android 客户端配置完成（待构建问题修复）
+- [ECHO-FEATURE-005] Sync 服务实现（Week 5-6）(2026-02-03)
   - 2 个核心 API: getState、getDifference
   - 铁律 B 核心实现（回放 pending_updates 日志）
   - 3 个新增文件 + 4 个修改文件
@@ -78,7 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 变更记录索引
 
 ### 功能变更 (Features)
-- [ECHO-FEATURE-005](features/ECHO-FEATURE-005-sync-service.md) - Sync 服务实现 (2026-02-03) ✨ NEW
+- [ECHO-FEATURE-006](features/ECHO-FEATURE-006-e2e-test-report.md) - Week 5-6 E2E 测试报告 (2026-02-03) ✨ NEW
+- [ECHO-FEATURE-005](features/ECHO-FEATURE-005-sync-service.md) - Sync 服务实现 (2026-02-03)
 - [ECHO-FEATURE-004](features/ECHO-FEATURE-004-message-service.md) - Message 服务实现 (2026-02-03)
 - [ECHO-FEATURE-003](features/ECHO-FEATURE-003-auth-service.md) - Auth 服务实现 (2026-02-02)
 - [ECHO-FEATURE-002](features/ECHO-FEATURE-002-gateway-config-verification.md) - Gateway 服务配置与验证 (2026-02-02)

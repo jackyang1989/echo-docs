@@ -2,6 +2,12 @@
 
 ⚠️ **重要说明**: Echo 使用 100% 自研服务端（echo-server），只复用 Teamgram Gateway 处理 MTProto 协议。无需 Telegram API 凭证。
 
+## 🔴 P0 必读（不可跳过）
+
+- [echo-docs/docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md](echo-docs/docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md)
+
+任何代码/文档改动都必须先符合该约束。
+
 ---
 
 ## 🚀 一键部署 (推荐)
