@@ -170,6 +170,31 @@ Echo 不要：
 - ❌ 临时但复杂
 - ❌ 能跑但不可控
 
+---
+
+## 🔴 P0 工程规则：禁止硬编码配置（尤其是 DB/端口/RSAKey/DC 地址）
+
+本规则适用于：`echo-server` 的所有 `cmd/*/main.go`。
+
+### 允许做的事
+
+- main.go 仅负责：解析 flags/env -> 读取 `configs/*.yaml` -> `Validate()` -> 启动服务
+- 配置 SSOT：`configs/*.yaml`（可允许环境变量覆盖配置路径，例如 `ECHO_CONFIG`）
+- 缺失必填项时 fail-fast：立刻报错退出
+
+### 禁止做的事（硬性禁止）
+
+- 在 `cmd/*/main.go` 中硬编码任何业务配置常量或结构体初始化（例如 `Config{...}`）
+- 把数据库连接参数（Host/Port/User/Password/DBName）写死在 main.go
+- 把 RSAKey 路径写死在 main.go
+- 把 DC 地址 / ExternalIP / 端口写死在 main.go（含 `127.0.0.1` / `localhost` / 内网 IP）
+
+### 权威条款
+
+该规则的 P0 细则与验收口径以：
+
+- `echo-docs/docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md` 第 12 节为准
+
 #### 📌 一句话版本（极简）
 
 > 在 Echo 项目中，你只能输出"**最终、可维护、无试验痕迹**"的代码。

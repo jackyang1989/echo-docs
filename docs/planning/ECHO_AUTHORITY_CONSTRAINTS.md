@@ -303,3 +303,82 @@ Step E. 删除 HTTP（收口）
 
 - 迁移前后：MTProto E2E 必须保持完全一致（两设备），断线补洞必须可用（getDifference），消息顺序/已读/删除等行为必须不变。
 - 任何行为差异都视为失败，不允许“先上线再修”。
+
+---
+
+## 12. P0 规则：禁止硬编码配置（尤其是 DB/端口/RSAKey/DC 地址）
+
+本条款用于防止“把环境/安全配置写死在代码里”导致不可维护、不可审计、不可回滚的问题。
+
+### 12.1 硬性要求（必须全部满足）
+
+1) `cmd/gateway/main.go`（以及所有 `cmd/*/main.go`）里禁止出现任何“业务配置常量/硬编码结构体初始化”
+
+- 禁止 `NewServer(Config{...})` 这种写法
+- 禁止把 DB `Host/Port/User/Password/DBName` 写死
+- 禁止把 RSAKey 路径写死
+- 禁止把 DC 地址 / ExternalIP / 端口写死（含 `127.0.0.1` / `localhost` / 内网 IP 等）
+
+2) 配置的单一真相源必须是：`configs/*.yaml`（或环境变量覆盖）
+
+- 启动时必须遵循：先加载配置 -> 再启动服务
+- 允许通过环境变量覆盖配置路径（例如：`ECHO_CONFIG=/path/xxx.yaml`）
+
+3) 启动失败必须 fail-fast
+
+- 任何必填项缺失/为零值 -> 立即报错退出
+- 不允许靠默认值“凑合跑”
+
+### 12.2 一次性修复步骤（Gateway）
+
+A. 删掉 `main.go` 内硬编码 config
+
+- `main.go` 只做：解析 flags/env -> 读取 YAML -> `Validate()` -> `NewServer(cfg)` -> `Run()`
+
+B. 实现统一的 Load + Validate（必须有）
+
+1) `pkg/config/load.go`
+
+- `func Load(path string) (Config, error)` // 从 YAML 读
+
+2) `pkg/config/validate.go`
+
+- `func (c Config) Validate() error`
+
+必填项（至少）：
+
+- Gateway.ListenAddr
+- RSAKey.PublicKeyPath / PrivateKeyPath（或 key 内容）
+- Database.Host / Port / User / Password / DBName
+- ExternalIP / MTProtoPort（如果 `help.getConfig` 用到）
+
+C. `main.go` 规范模板（所有服务一致）
+
+- 必须支持：`--config configs/gateway.yaml`
+- 允许 ENV 覆盖（可选）：`ECHO_CONFIG=/path/xxx.yaml`
+
+D. 加“硬编码门禁”脚本（防复发）
+
+在 `tools/validate-no-hardcode.sh` 新增检查（gateway 先做，后续扩到所有 cmd）：
+
+- 发现以下任一模式直接失败：
+  1) `Config{` 出现在 `cmd/gateway/main.go`
+  2) `Database:` 出现在 `cmd/gateway/main.go`
+  3) `RSAKey:` 出现在 `cmd/gateway/main.go`
+  4) `localhost:` / `127.0.0.1:` / `192.168.` 出现在 `cmd/gateway/main.go`（防写死地址）
+
+- 把该脚本加入 `./tools/validate-agents-compliance.sh` 里作为硬门禁
+
+### 12.3 验收标准
+
+删除硬编码后：
+
+1) 仅改 `configs/gateway.yaml` 就能切换 DB/端口/ExternalIP
+2) configs 缺字段时，Gateway 启动直接报“Missing config: Database.Host”并退出
+3) `validate-no-hardcode.sh` 能抓到任何硬编码并失败
+
+### 12.4 禁止偷懒
+
+- 不允许“先补个 Database 默认值让它跑起来”
+- 不允许“临时把 DB 关掉/跳过连接”
+- 不允许“先注释掉 DB 初始化”
