@@ -469,7 +469,7 @@ Echo 项目的核心开发文档集中存放在 `docs/core/` 目录，**严禁�
 ### 📁 核心文档目录结构
 
 ```
-./echo-server/docs/core/                 # Echo 服务端核心文档（100% 自研）
+echo-docs/echo-server/docs/core/         # Echo 服务端核心文档（100% 自研）
 ├── README.md                          # 核心文档索引和保护规则
 ├── changes/                           # 代码变更记录（最重要）
 │   ├── CHANGELOG.md                  # 变更总览
@@ -492,7 +492,7 @@ Echo 项目的核心开发文档集中存放在 `docs/core/` 目录，**严禁�
     ├── commit-conventions.md         # 提交规范
     └── review-checklist.md           # 审查清单
 
-./echo-android-client/docs/core/         # Android 客户端核心文档
+echo-docs/echo-android-client/docs/core/     # Android 客户端核心文档
 ├── README.md                          # 核心文档索引和保护规则
 ├── changes/                           # 代码变更记录（最重要）
 │   ├── CHANGELOG.md                  # 变更总览
@@ -526,22 +526,22 @@ Echo 项目的核心开发文档集中存放在 `docs/core/` 目录，**严禁�
 
 | 文档类型 | 路径 | 说明 | 重要性 |
 |---------|------|------|--------|
-| 核心文档索引 | `./echo-server/docs/core/README.md` | 核心文档目录说明和保护规则 | 🔴 必读 |
-| 变更总览 | `./echo-server/docs/core/changes/CHANGELOG.md` | 所有变更的时间线和版本历史 | 🔴 必读 |
-| 变更记录指南 | `./echo-server/docs/core/changes/README.md` | 如何创建和维护变更记录 | 🔴 必读 |
-| 功能变更模板 | `./echo-server/docs/core/changes/features/ECHO-FEATURE-TEMPLATE.md` | 新功能变更记录模板 | 🔴 必用 |
-| 功能变更记录 | `./echo-server/docs/core/changes/features/ECHO-FEATURE-XXX-*.md` | 具体功能的详细记录 | 🔴 核心资产 |
-| Bug 修复记录 | `./echo-server/docs/core/changes/bugfixes/ECHO-BUG-XXX-*.md` | Bug 修复的详细记录 | 🔴 核心资产 |
-| 优化记录 | `./echo-server/docs/core/changes/optimizations/ECHO-OPT-XXX-*.md` | 性能优化的详细记录 | 🔴 核心资产 |
-| 上游合并报告 | `./echo-server/docs/core/changes/merge-reports/merge-teamgram-gateway-vX.X.X.md` | Teamgram Gateway 更新合并报告 | 🔴 核心资产 |
-| **架构设计** | `./echo-server/docs/core/architecture/` | **架构设计文档** | **🔴 核心资产** |
-| 系统架构设计 | `./echo-server/docs/core/architecture/system-design.md` | 自研架构、数据流转、服务通信 | 🔴 必读 |
-| 模块设计文档 | `./echo-server/docs/core/architecture/module-design.md` | 模块职责、依赖关系、扩展指南 | 🔴 必读 |
-| API 契约文档 | `./echo-server/docs/core/architecture/api-contracts.md` | 版本化策略、接口规范、错误码 | 🔴 必读 |
-| **开发规范** | `./echo-server/docs/core/standards/` | **开发规范文档** | **🔴 核心资产** |
-| 编码规范 | `./echo-server/docs/core/standards/coding-standards.md` | Go 代码编写规范 | 🔴 必读 |
-| 提交规范 | `./echo-server/docs/core/standards/commit-conventions.md` | Git 提交消息规范 | 🔴 必读 |
-| 审查清单 | `./echo-server/docs/core/standards/review-checklist.md` | PR 审查必查项（10 大类别） | 🔴 必读 |
+| 核心文档索引 | `echo-server/docs/core/README.md` | 核心文档目录说明和保护规则 | 🔴 必读 |
+| 变更总览 | `echo-server/docs/core/changes/CHANGELOG.md` | 所有变更的时间线和版本历史 | 🔴 必读 |
+| 变更记录指南 | `echo-server/docs/core/changes/README.md` | 如何创建和维护变更记录 | 🔴 必读 |
+| 功能变更模板 | `echo-server/docs/core/changes/features/ECHO-FEATURE-TEMPLATE.md` | 新功能变更记录模板 | 🔴 必用 |
+| 功能变更记录 | `echo-server/docs/core/changes/features/ECHO-FEATURE-XXX-*.md` | 具体功能的详细记录 | 🔴 核心资产 |
+| Bug 修复记录 | `echo-server/docs/core/changes/bugfixes/ECHO-BUG-XXX-*.md` | Bug 修复的详细记录 | 🔴 核心资产 |
+| 优化记录 | `echo-server/docs/core/changes/optimizations/ECHO-OPT-XXX-*.md` | 性能优化的详细记录 | 🔴 核心资产 |
+| 上游合并报告 | `echo-server/docs/core/changes/merge-reports/merge-teamgram-gateway-vX.X.X.md` | Teamgram Gateway 更新合并报告 | 🔴 核心资产 |
+| **架构设计** | `echo-server/docs/core/architecture/` | **架构设计文档** | **🔴 核心资产** |
+| 系统架构设计 | `echo-server/docs/core/architecture/system-design.md` | 自研架构、数据流转、服务通信 | 🔴 必读 |
+| 模块设计文档 | `echo-server/docs/core/architecture/module-design.md` | 模块职责、依赖关系、扩展指南 | 🔴 必读 |
+| API 契约文档 | `echo-server/docs/core/architecture/api-contracts.md` | 版本化策略、接口规范、错误码 | 🔴 必读 |
+| **开发规范** | `echo-server/docs/core/standards/` | **开发规范文档** | **🔴 核心资产** |
+| 编码规范 | `echo-server/docs/core/standards/coding-standards.md` | Go 代码编写规范 | 🔴 必读 |
+| 提交规范 | `echo-server/docs/core/standards/commit-conventions.md` | Git 提交消息规范 | 🔴 必读 |
+| 审查清单 | `echo-server/docs/core/standards/review-checklist.md` | PR 审查必查项（10 大类别） | 🔴 必读 |
 
 #### Teamgram 参考项目 (echo-server-source)
 
@@ -557,22 +557,22 @@ Echo 项目的核心开发文档集中存放在 `docs/core/` 目录，**严禁�
 
 | 文档类型 | 路径 | 说明 | 重要性 |
 |---------|------|------|--------|
-| 核心文档索引 | `docs/core/README.md` | 核心文档目录说明和保护规则 | 🔴 必读 |
-| 变更总览 | `docs/core/changes/CHANGELOG.md` | 所有变更的时间线和版本历史 | 🔴 必读 |
-| 变更记录指南 | `docs/core/changes/README.md` | 如何创建和维护变更记录 | 🔴 必读 |
-| 功能变更模板 | `docs/core/changes/features/ECHO-FEATURE-TEMPLATE.md` | 新功能变更记录模板 | 🔴 必用 |
-| 功能变更记录 | `docs/core/changes/features/ECHO-FEATURE-XXX-*.md` | 具体功能的详细记录 | 🔴 核心资产 |
-| Bug 修复记录 | `docs/core/changes/bugfixes/ECHO-BUG-XXX-*.md` | Bug 修复的详细记录 | 🔴 核心资产 |
-| 优化记录 | `docs/core/changes/optimizations/ECHO-OPT-XXX-*.md` | 性能优化的详细记录 | 🔴 核心资产 |
-| 上游合并报告 | `docs/core/changes/merge-reports/merge-telegram-vX.X.X.md` | Telegram 上游更新合并报告 | 🔴 核心资产 |
-| **架构设计** | `docs/core/architecture/` | **架构设计文档** | **🔴 核心资产** |
-| 系统架构设计 | `docs/core/architecture/system-design.md` | 系统架构、模块划分、数据流转 | 🔴 必读 |
-| 模块设计文档 | `docs/core/architecture/module-design.md` | 模块职责、依赖关系、扩展指南 | 🔴 必读 |
-| UI 组件设计 | `docs/core/architecture/ui-components.md` | UI 组件设计和使用规范 | 🟡 重要 |
-| **开发规范** | `docs/core/standards/` | **开发规范文档** | **🔴 核心资产** |
-| 编码规范 | `docs/core/standards/coding-standards.md` | Java/Kotlin 代码编写规范 | 🔴 必读 |
-| 提交规范 | `docs/core/standards/commit-conventions.md` | Git 提交消息规范 | 🔴 必读 |
-| 审查清单 | `docs/core/standards/review-checklist.md` | PR 审查必查项（10 大类别） | 🔴 必读 |
+| 核心文档索引 | `echo-android-client/docs/core/README.md` | 核心文档目录说明和保护规则 | 🔴 必读 |
+| 变更总览 | `echo-android-client/docs/core/changes/CHANGELOG.md` | 所有变更的时间线和版本历史 | 🔴 必读 |
+| 变更记录指南 | `echo-android-client/docs/core/changes/README.md` | 如何创建和维护变更记录 | 🔴 必读 |
+| 功能变更模板 | `echo-android-client/docs/core/changes/features/ECHO-FEATURE-TEMPLATE.md` | 新功能变更记录模板 | 🔴 必用 |
+| 功能变更记录 | `echo-android-client/docs/core/changes/features/ECHO-FEATURE-XXX-*.md` | 具体功能的详细记录 | 🔴 核心资产 |
+| Bug 修复记录 | `echo-android-client/docs/core/changes/bugfixes/ECHO-BUG-XXX-*.md` | Bug 修复的详细记录 | 🔴 核心资产 |
+| 优化记录 | `echo-android-client/docs/core/changes/optimizations/ECHO-OPT-XXX-*.md` | 性能优化的详细记录 | 🔴 核心资产 |
+| 上游合并报告 | `echo-android-client/docs/core/changes/merge-reports/merge-telegram-vX.X.X.md` | Telegram 上游更新合并报告 | 🔴 核心资产 |
+| **架构设计** | `echo-android-client/docs/core/architecture/` | **架构设计文档** | **🔴 核心资产** |
+| 系统架构设计 | `echo-android-client/docs/core/architecture/system-design.md` | 系统架构、模块划分、数据流转 | 🔴 必读 |
+| 模块设计文档 | `echo-android-client/docs/core/architecture/module-design.md` | 模块职责、依赖关系、扩展指南 | 🔴 必读 |
+| UI 组件设计 | `echo-android-client/docs/core/architecture/ui-components.md` | UI 组件设计和使用规范 | 🟡 重要 |
+| **开发规范** | `echo-android-client/docs/core/standards/` | **开发规范文档** | **🔴 核心资产** |
+| 编码规范 | `echo-android-client/docs/core/standards/coding-standards.md` | Java/Kotlin 代码编写规范 | 🔴 必读 |
+| 提交规范 | `echo-android-client/docs/core/standards/commit-conventions.md` | Git 提交消息规范 | 🔴 必读 |
+| 审查清单 | `echo-android-client/docs/core/standards/review-checklist.md` | PR 审查必查项（10 大类别） | 🔴 必读 |
 
 ---
 
