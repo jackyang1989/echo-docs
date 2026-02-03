@@ -34,6 +34,24 @@
 
 ---
 
+## 🔴 约束与边界（P0，必须遵守）
+
+本模块属于旁路系统（Control Plane），必须遵守：`docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md`。
+
+**职责分离（不可破坏）**：
+- 管理后台/管理服务（Admin Service）：只负责“写策略 + 记审计 + 提供运营工具”
+- IM Core（Echo Server）：负责“关键路径强制执行”（upload.*、sendMessage、search、ban、踢会话等），策略必须不可绕过
+
+**禁止误导性表述**：
+- ❌ 依赖“中间层拦截/过滤”来实现安全或一致性
+- ✅ 允许中间层做缓存/聚合/索引，但最终 enforcement 必须在 Core 关键路径
+
+**审计门禁**：
+- 每个管理操作必须写 `audit_log`（who/when/what/before/after/request_id）
+- 危险操作必须有明确回滚策略（封禁/解散/紧急开关等）
+
+---
+
 ## 📊 功能优先级总览
 
 ### 🟥 P0 - 平台生存级（必须实现）
@@ -296,10 +314,9 @@ interface FileControl {
 **控制粒度**: 上传层控制，不解析内容
 
 **实现方式**:
-- Echo Business Server 拦截上传请求
-- 检查用户/群组的上传权限
-- 检查文件类型和大小
-- 允许/拒绝上传到 MinIO
+- Admin Service 写入上传策略（含审计）到策略存储（例如 `file_control_policies`）
+- IM Core 在上传关键路径强制执行（例如 `upload.saveFilePart` / `upload.saveBigFilePart` 等），策略必须不可绕过
+- MinIO 仅作为存储后端；权限/配额/类型/大小检查必须发生在写入前
 
 **数据来源**:
 - Echo DB: `file_control_policies`, `upload_quotas`, `upload_logs`
@@ -422,10 +439,9 @@ interface ChatDiscoverability {
 **控制粒度**: 全局级 / 用户级 / 群组级
 
 **实现方式**:
-- Echo Business Server 维护搜索索引
-- 过滤不可搜索的用户/群组
-- Echo 搜索 API 返回结果后再过滤
-- 风控标记自动联动隐藏
+- Admin Service 写入“可发现性/白名单/总开关”策略（含审计）
+- 搜索索引可以由旁路 Search Indexer 构建（只读视图），但搜索结果必须在 IM Core 关键路径按策略裁剪，策略必须不可绕过
+- 风控标记（scam/fake/restricted）最终以 IM Core 的权威字段与执行为准，旁路系统只做只读展示/统计
 
 **数据来源**:
 - Echo DB (只读): `users`, `chats`, `usernames`
@@ -580,8 +596,8 @@ interface AbnormalSessionDetection {
 **实现方式**:
 - 通过 Echo API 查询会话列表
 - 通过 Echo API 终止会话
-- Echo Business Server 记录操作日志
-- 异常检测规则在 Echo 侧实现
+- Admin Service 负责发起管理操作与写审计（`audit_log`），IM Core 负责执行会话终止（不可绕过）
+- 异常会话检测可以在 Admin/Risk 侧实现，但“终止会话”动作必须走 IM Core 的管理接口
 
 **数据来源**:
 - Echo DB (只读): `auth_keys`, `user_presences`
@@ -868,9 +884,9 @@ interface PushRiskControl {
 #### 实现方式
 
 ```typescript
-// Echo Business Server - Push Gateway
+// IM Core - Push Dispatcher（策略在 Core 关键路径强制执行）
 @Injectable()
-export class PushGatewayService {
+export class PushDispatcherService {
   async shouldSendPush(
     userId: string,
     chatId: string,
@@ -892,7 +908,7 @@ export class PushGatewayService {
     if (!rateOk) return false;
     
     // 5. 检查用户是否在线（从 Echo 查询）
-    const isOnline = await this.echoBridge.isUserOnline(userId);
+    const isOnline = await this.presenceStore.isUserOnline(userId);
     if (isOnline) return false;
     
     return true;
@@ -903,7 +919,7 @@ export class PushGatewayService {
 #### 数据来源
 
 - Echo DB (只读): `user_presences` (在线状态)
-- Echo DB (读写): `push_controls`, `push_rate_limits`, `push_logs`
+- Admin DB (读写): `push_controls`, `push_rate_limits`, `push_logs`（策略与审计；IM Core 读取并强制执行）
 
 ---
 
@@ -985,9 +1001,9 @@ interface MarkRecord {
 **控制粒度**: 标记级控制，不碰内容
 
 **实现方式**:
-- Echo Business Server 维护标记状态
-- 同步到 Echo DB 的 `scam`/`fake` 字段
-- 客户端显示警告标识
+- Admin Service 发起标记/解除操作并写审计（`audit_log`）
+- IM Core 更新权威字段（`users.scam/fake/verified`、`chats.scam/fake/verified/restricted`）并通过既有 TL 机制同步给客户端
+- 旁路系统允许做只读索引/统计，但不得成为 enforcement 边界
 
 **数据来源**:
 - Echo DB (读写): `users.scam`, `users.fake`, `chats.scam`, `chats.fake`
@@ -1067,9 +1083,9 @@ interface GlobalMessageTypePolicy {
 **控制粒度**: 消息类型级控制
 
 **实现方式**:
-- Echo Business Server 维护限制配置
-- 同步到 Echo DB 的 `chat_banned_rights`
-- 客户端根据权限禁用发送功能
+- Admin Service 写入限制策略（含审计）
+- IM Core 将策略映射到 Telegram rights（例如 `chatBannedRights` / `updateChatDefaultBannedRights`），并在发送/上传关键路径强制执行（不可绕过）
+- 客户端根据 rights 禁用 UI 仅是表现层；最终以 IM Core enforcement 为准
 
 **数据来源**:
 - Echo DB (读写): `chats.default_banned_rights`
@@ -1454,9 +1470,8 @@ interface VerificationRecord {
 **控制粒度**: 标记级控制
 
 **实现方式**:
-- Echo Business Server 维护验证状态
-- 同步到 Echo DB 的 `verified` 字段
-- 客户端显示蓝V标识
+- Admin Service 发起验证/取消验证并写审计（`audit_log`）
+- IM Core 更新权威字段（`users.verified` / `chats.verified`）并通过既有 TL 机制同步给客户端
 
 **数据来源**:
 - Echo DB (读写): `users.verified`, `chats.verified`
@@ -1539,9 +1554,9 @@ interface UsernameRecord {
 **控制粒度**: 用户名级控制
 
 **实现方式**:
-- Echo Business Server 维护用户名状态
-- 同步到 Echo DB 的 `username` 字段
-- 维护保留用户名列表
+- Admin Service 发起“移除/保留/释放”操作并写审计（`audit_log`）
+- IM Core 作为最终权威：写入/清空 `users.username` / `chats.username`，并确保对搜索/resolveUsername 等关键路径强制生效（不可绕过）
+- 保留用户名列表可存放在 Admin DB（策略），但最终可用性裁决与落库在 IM Core
 
 **数据来源**:
 - Echo DB (读写): `users.username`, `chats.username`
@@ -1796,12 +1811,25 @@ interface ComplianceTools {
 
 ### 数据库设计
 
-**Echo Business DB (PostgreSQL)**:
+**Echo Admin DB (PostgreSQL, Policy + Audit)**:
 
 ```sql
+-- 审计日志（所有管理操作必须写）
+CREATE TABLE audit_log (
+  id BIGSERIAL PRIMARY KEY,
+  actor_admin_id BIGINT,
+  action VARCHAR(64) NOT NULL,
+  target_type VARCHAR(20),
+  target_id BIGINT,
+  request_id VARCHAR(64) NOT NULL,
+  before JSONB,
+  after JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
 -- 用户状态表
 CREATE TABLE user_status (
-  user_id VARCHAR(255) PRIMARY KEY,
+  user_id BIGINT PRIMARY KEY,
   status VARCHAR(20) NOT NULL,  -- normal, frozen, banned
   risk_level VARCHAR(20),
   banned_at TIMESTAMP,
@@ -1815,7 +1843,7 @@ CREATE TABLE user_status (
 CREATE TABLE push_controls (
   id SERIAL PRIMARY KEY,
   entity_type VARCHAR(20) NOT NULL,  -- user, chat, global
-  entity_id VARCHAR(255),
+  entity_id BIGINT,
   push_enabled BOOLEAN DEFAULT TRUE,
   max_push_per_hour INTEGER,
   reason TEXT,
@@ -1827,12 +1855,12 @@ CREATE TABLE push_controls (
 CREATE TABLE reports (
   id SERIAL PRIMARY KEY,
   report_type VARCHAR(20) NOT NULL,  -- message, user, chat
-  reported_by VARCHAR(255) NOT NULL,
-  reported_target VARCHAR(255) NOT NULL,
+  reported_by BIGINT NOT NULL,
+  reported_target BIGINT NOT NULL,
   reason VARCHAR(50),
   description TEXT,
-  message_id VARCHAR(255),
-  chat_id VARCHAR(255),
+  message_id BIGINT,
+  chat_id BIGINT,
   status VARCHAR(20) DEFAULT 'pending',
   handled_by VARCHAR(255),
   handled_at TIMESTAMP,
@@ -1883,7 +1911,7 @@ CREATE TABLE system_controls (
 **RESTful API 结构**:
 
 ```
-echo-business-server/
+echo-admin-service/
 ├── /api/admin/
 │   ├── /users
 │   │   ├── GET    /               # 用户列表
@@ -2137,7 +2165,7 @@ interface AdminRole {
 
 ### 架构检查
 
-- [ ] Echo Business Server 独立部署
+- [ ] Echo Admin Service 独立部署
 - [ ] 使用独立的 PostgreSQL 数据库
 - [ ] Echo DB 只读访问
 - [ ] 通过事件/gRPC 与 Echo 通信
@@ -2257,7 +2285,7 @@ interface AdminRole {
 ### 下一步行动
 
 1. ✅ 完成 Echo Server 部署
-2. 🔄 搭建 Echo Business Server 框架
+2. 🔄 搭建 Echo Admin Service 框架
 3. 🔄 实现 P0 核心功能（含推送控制）
 4. ⏳ 实现 P1 差异化功能
 5. ⏳ 按需实现 P2-P3 功能
@@ -2266,4 +2294,3 @@ interface AdminRole {
 
 **最后更新**: 2026-01-27  
 **状态**: 管理后台功能规划完成（含推送控制完整设计）
-

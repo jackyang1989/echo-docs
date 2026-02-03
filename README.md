@@ -103,6 +103,7 @@ echo-docs/
 - `docs/configuration/ECHO_SECURITY_CONFIG.md` - 安全配置
 
 ### 规划文档
+- `docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md` - 权威约束清单（P0，必须先读）
 - `docs/planning/ECHO_ADMIN_PANEL.md` - 管理面板设计
 - `docs/planning/ECHO_SQUARE_DESIGN.md` - 广场功能设计
 - `docs/planning/ECHO_FEATURE_ROADMAP.md` - 功能范围（580/601 个 API）

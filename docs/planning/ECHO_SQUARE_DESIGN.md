@@ -26,6 +26,29 @@
 
 ---
 
+## 🔴 约束与边界（必须遵守）
+
+本模块属于旁路系统（sidecar），必须遵守：`docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md`。
+
+**架构边界**：
+- Square 必须有独立数据库（发布/互动/推荐/审核/实验参数均在 Square DB）
+- Square 只读 IM（消费 IM 事件或只读视图），禁止直接写 IM 核心消息表
+- Square 停机/降级不得影响 IM 核心链路
+
+**ID 与媒体模型**：
+- IM 的 `user_id/chat_id` 以 `int64` 为权威（DB 用 `BIGINT`）；在 JSON/TS 中建议统一用字符串承载（避免 JS number 精度问题）
+- Square 的媒体必须引用 IM media pool 的 `file_id`（不以 URL 作为权威数据）
+
+**Feature Flag（服务端降级契约）**：
+- `FEATURE_SQUARE_ENABLED`（默认关闭）
+- `FEATURE_SQUARE_CHAT_SYNC_ENABLED`（默认关闭）
+
+当 Feature Flag 关闭时：
+- 服务端返回明确的 `FEATURE_DISABLED` / `NOT_IMPLEMENTED`
+- 不产生任何“假数据/假成功”
+
+---
+
 ## 📊 功能优先级总览
 
 ### 🟥 P0 - 最小可用版本（没有这些就不成立）
@@ -74,8 +97,8 @@ interface PersonalBroadcast {
   // 内容
   contentType: 'text' | 'image' | 'video' | 'mixed';
   text?: string;                // 最多 5000 字
-  images?: string[];            // 最多 9 张
-  video?: string;               // 单个视频
+  imageFileIds?: string[];      // 最多 9 张（file_id，int64 string）
+  videoFileId?: string;         // 单个视频（file_id，int64 string）
   
   // 草稿
   isDraft: boolean;
@@ -116,8 +139,8 @@ interface ChatSyncContent {
   // 内容（与个人广播相同）
   contentType: 'text' | 'image' | 'video' | 'mixed';
   text?: string;
-  images?: string[];
-  video?: string;
+  imageFileIds?: string[];      // 图片 file_id 数组（int64 string）
+  videoFileId?: string;         // 视频 file_id（int64 string）
   
   // 同步设置
   syncToSquare: boolean;        // 用户主动勾选
@@ -1194,17 +1217,17 @@ interface AlgorithmConfig {
 -- 广场内容表
 CREATE TABLE square_posts (
   post_id VARCHAR(255) PRIMARY KEY,
-  author_id VARCHAR(255) NOT NULL,
+  author_id BIGINT NOT NULL,
   
   -- 来源
   source_type VARCHAR(20) NOT NULL,  -- personal, chat, channel
-  source_id VARCHAR(255),            -- 群/频道 ID（如果是同步内容）
+  source_id BIGINT,                  -- 群/频道 ID（如果是同步内容）
   
   -- 内容
   content_type VARCHAR(20) NOT NULL, -- text, image, video, mixed
   text TEXT,
-  images TEXT[],                     -- 图片 URL 数组
-  video VARCHAR(255),
+  image_file_ids BIGINT[],           -- 图片 file_id 数组
+  video_file_id BIGINT,              -- 视频 file_id
   
   -- 状态
   status VARCHAR(20) DEFAULT 'published',  -- draft, published, hidden, deleted
@@ -1245,7 +1268,7 @@ CREATE TABLE square_posts (
 CREATE TABLE square_comments (
   comment_id VARCHAR(255) PRIMARY KEY,
   post_id VARCHAR(255) NOT NULL,
-  user_id VARCHAR(255) NOT NULL,
+  user_id BIGINT NOT NULL,
   
   -- 内容
   text TEXT NOT NULL,
@@ -1271,7 +1294,7 @@ CREATE TABLE square_comments (
 CREATE TABLE square_interactions (
   interaction_id SERIAL PRIMARY KEY,
   post_id VARCHAR(255) NOT NULL,
-  user_id VARCHAR(255) NOT NULL,
+  user_id BIGINT NOT NULL,
   
   -- 互动类型
   interaction_type VARCHAR(20) NOT NULL,  -- like, save, repost, view, join_click
@@ -1290,12 +1313,12 @@ CREATE TABLE square_interactions (
 
 -- 用户控制表
 CREATE TABLE square_user_controls (
-  user_id VARCHAR(255) PRIMARY KEY,
+  user_id BIGINT PRIMARY KEY,
   
   -- 拉黑/屏蔽
-  blocked_users TEXT[],
-  blocked_sources TEXT[],
-  muted_users TEXT[],
+  blocked_users BIGINT[],
+  blocked_sources BIGINT[],
+  muted_users BIGINT[],
   
   -- 不感兴趣
   not_interested_posts TEXT[],
@@ -1306,14 +1329,14 @@ CREATE TABLE square_user_controls (
 
 -- 群/频道同步设置表
 CREATE TABLE square_chat_sync_settings (
-  chat_id VARCHAR(255) PRIMARY KEY,
+  chat_id BIGINT PRIMARY KEY,
   
   -- 同步设置
   sync_enabled BOOLEAN DEFAULT FALSE,
   auto_sync BOOLEAN DEFAULT FALSE,
   
   -- 权限
-  allowed_users TEXT[],           -- 允许同步的用户
+  allowed_users BIGINT[],         -- 允许同步的用户
   
   -- 统计
   synced_post_count INTEGER DEFAULT 0,
@@ -1367,21 +1390,21 @@ interface PostCardProps {
   post: {
     postId: string;
     author: {
-      userId: string;
+      userId: string;              // int64 string
       username: string;
       displayName: string;
       avatar: string;
     };
     source: {
       type: 'personal' | 'chat' | 'channel';
-      chatId?: string;
+      chatId?: string;             // int64 string
       chatTitle?: string;
     };
     content: {
       type: 'text' | 'image' | 'video' | 'mixed';
       text?: string;
-      images?: string[];
-      video?: string;
+      imageFileIds?: string[];     // file_id array (int64 string)
+      videoFileId?: string;        // file_id (int64 string)
     };
     stats: {
       likeCount: number;
@@ -1707,4 +1730,3 @@ interface AlgorithmConfiguration {
 
 **最后更新**: 2026-01-28  
 **状态**: 广场功能设计完成，可直接用于开发
-
