@@ -42,6 +42,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
 ### Fixed
+- [ECHO-BUG-025] Pre-Auth RPC 白名单机制 (2026-02-04) 🔴 P0
+  - 修复客户端在 TempAuthKey 阶段无法发送 help.getConfig 的问题
+  - 实现 Pre-Auth 阶段白名单（PreAuthInit/PreAuthLogin/PreAuthAuthorized）
+  - 实现本地 help.getConfig 处理器（不依赖数据库）
+  - 阶段转换：help.getConfig 成功后从 PreAuthInit 进入 PreAuthLogin
+  - 新增 3 个文件 + 修改 4 个文件
+- [ECHO-BUG-024] Gateway RPC 响应发送逻辑缺失 (2026-02-04) ⏳ 部分解决
+  - 修复 server_gnet.go 第 360-370 行 RPC 响应发送逻辑
+  - 客户端连接问题仍未解决（已被 ECHO-BUG-025 解决）
 - [ECHO-FEATURE-001] 修复 gnet v2 API 兼容性问题 (2026-02-02)
 - [ECHO-FEATURE-001] 修复编译错误 - 未使用的导入 (2026-02-02)
 
@@ -90,7 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ECHO-FEATURE-001](features/ECHO-FEATURE-001-gnet-v2-api-adaptation.md) - gnet v2 API 适配 (2026-02-02)
 
 ### Bug 修复 (Bug Fixes)
-- 暂无
+- [ECHO-BUG-025](bugfixes/ECHO-BUG-025-pre-auth-rpc-whitelist.md) - Pre-Auth RPC 白名单机制 (2026-02-04) 🔴 P0
+- [ECHO-BUG-024](bugfixes/ECHO-BUG-024-gateway-rpc-response-not-sent.md) - Gateway RPC 响应发送逻辑缺失 (2026-02-04) ⏳ 部分解决
 
 ### 性能优化 (Optimizations)
 - 暂无
