@@ -41,13 +41,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 Gateway 监听端口为 10443
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
-### Fixed
-- [ECHO-BUG-025] Pre-Auth RPC 白名单机制 (2026-02-04) 🔴 P0
+### Planned
+- [ECHO-FEATURE-007] Pre-Auth RPC 白名单机制 (2026-02-04) 🔴 P0 📋 计划中
   - 修复客户端在 TempAuthKey 阶段无法发送 help.getConfig 的问题
-  - 实现 Pre-Auth 阶段白名单（PreAuthInit/PreAuthLogin/PreAuthAuthorized）
-  - 实现本地 help.getConfig 处理器（不依赖数据库）
-  - 阶段转换：help.getConfig 成功后从 PreAuthInit 进入 PreAuthLogin
-  - 新增 3 个文件 + 修改 4 个文件
+  - 实现显式 Pre-Auth RPC 白名单（help.getConfig、help.getNearestDc、help.getAppConfig）
+  - 实现本地 help.getConfig 处理器（配置来自 gateway.yaml，不依赖数据库）
+  - 白名单采用显式列表 + 单元测试，禁止宽泛匹配
+  - 预计新增 4 个文件 + 修改 3 个文件
+
+### Fixed
 - [ECHO-BUG-024] Gateway RPC 响应发送逻辑缺失 (2026-02-04) ⏳ 部分解决
   - 修复 server_gnet.go 第 360-370 行 RPC 响应发送逻辑
   - 客户端连接问题仍未解决（已被 ECHO-BUG-025 解决）
