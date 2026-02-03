@@ -50,6 +50,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 预计新增 4 个文件 + 修改 3 个文件
 
 ### Fixed
+- [ECHO-BUG-026] RSA 私钥与客户端公钥不匹配 (2026-02-04) ✅ 已解决
+  - 诊断发现服务器私钥与客户端编译时嵌入的公钥不匹配
+  - 从 `echo-server-source/echod/bin/server_pkcs1.key` 复制正确私钥
+  - DH 握手成功，但仍需解决 Pre-Auth RPC 问题
 - [ECHO-BUG-024] Gateway RPC 响应发送逻辑缺失 (2026-02-04) ⏳ 部分解决
   - 修复 server_gnet.go 第 360-370 行 RPC 响应发送逻辑
   - 客户端连接问题仍未解决（已被 ECHO-BUG-025 解决）
