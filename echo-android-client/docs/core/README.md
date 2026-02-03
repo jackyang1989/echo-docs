@@ -32,14 +32,14 @@ docs/core/
 │   │   └── ECHO-OPT-XXX-*.md
 │   └── merge-reports/             # 上游合并报告
 │       └── merge-telegram-vX.X.X.md
-├── architecture/                   # 架构设计文档（待创建）
-│   ├── system-design.md
-│   ├── module-design.md
-│   └── ui-components.md
-└── standards/                      # 开发规范文档（待创建）
-    ├── coding-standards.md
-    ├── commit-conventions.md
-    └── review-checklist.md
+├── architecture/                   # 架构设计文档 ✅ 已完善
+│   ├── system-design.md           # 系统架构设计
+│   ├── module-design.md           # 模块设计文档
+│   └── ui-components.md           # UI 组件设计
+└── standards/                      # 开发规范文档 ⏳ 待完善
+    ├── coding-standards.md        # 编码规范（Java/Kotlin）
+    ├── commit-conventions.md      # 提交规范
+    └── review-checklist.md        # 审查清单
 ```
 
 ---
@@ -84,7 +84,7 @@ docs/core/
 | 优化记录 | `changes/optimizations/ECHO-OPT-XXX-*.md` | 性能优化的详细记录 |
 | 合并报告 | `changes/merge-reports/merge-telegram-vX.X.X.md` | 上游更新合并报告 |
 
-### 2. 架构设计文档（待完善）
+### 2. 架构设计文档 ✅ 已完善
 
 | 文档 | 路径 | 说明 |
 |------|------|------|
@@ -92,7 +92,7 @@ docs/core/
 | 模块设计 | `architecture/module-design.md` | 各模块的详细设计 |
 | UI 组件 | `architecture/ui-components.md` | UI 组件设计和使用规范 |
 
-### 3. 开发规范文档（待完善）
+### 3. 开发规范文档 ⏳ 待完善
 
 | 文档 | 路径 | 说明 |
 |------|------|------|
