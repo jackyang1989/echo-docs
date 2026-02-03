@@ -16,22 +16,26 @@
 
 ## 🔴 核心规范文档（必读）
 
-| 文档 | 路径 | 说明 | 优先级 |
-|------|------|------|--------|
-| **AGENTS.md** | `./AGENTS.md` | AI Agent 规则文档、品牌命名、架构规范 | 🔴 P0 |
-| **ECHO执行方案-精简版.md** | `./ECHO执行方案-精简版.md` | 项目宪法、技术基线、生死线 | 🔴 P0 |
-| **QUICK_REFERENCE.md** | `./QUICK_REFERENCE.md` | 快速参考指南 | 🟡 P1 |
-| **QUICK_START.md** | `./QUICK_START.md` | 快速开始指南 | 🟡 P1 |
+> 📋 **文档状态详情请参考**: [DOCUMENT_STATUS.md](./DOCUMENT_STATUS.md)
+
+| 文档 | 路径 | 说明 | 优先级 | 状态 |
+|------|------|------|--------|------|
+| **AGENTS.md** | `./AGENTS.md` | AI Agent 规则文档、品牌命名、架构规范 | 🔴 P0 | ✅ 生效 |
+| **ECHO执行方案-精简版.md** | `./ECHO执行方案-精简版.md` | 项目宪法、Week 1-8 计划、生死线 | 🔴 P0 | ✅ 生效 |
+| **DOCUMENT_STATUS.md** | `./DOCUMENT_STATUS.md` | 文档状态登记表、权威文档清单 | 🔴 P0 | ✅ 生效 |
+| **QUICK_REFERENCE.md** | `./QUICK_REFERENCE.md` | 快速参考指南 | 🟡 P1 | ✅ 生效 |
+| **QUICK_START.md** | `./QUICK_START.md` | 快速开始指南 | 🟡 P1 | ⚠️ 需更新 |
 
 ---
 
 ## 📐 架构设计文档
 
-| 文档 | 路径 | 说明 | 评分 |
+| 文档 | 路径 | 说明 | 状态 |
 |------|------|------|------|
-| **ECHO_ARCHITECTURE.md** | `./docs/architecture/ECHO_ARCHITECTURE.md` | Echo 整体架构设计 | ⭐⭐⭐⭐ |
-| **ARCHITECTURE_DEPLOYMENT.md** | `./docs/architecture/ARCHITECTURE_DEPLOYMENT.md` | 架构与部署方案 | ⭐⭐⭐⭐ |
-| **ECHO_DESIGN_PRINCIPLES.md** | `./docs/architecture/ECHO_DESIGN_PRINCIPLES.md` | 设计原则 | ⭐⭐⭐⭐ |
+| **ARCHITECTURE_DEPLOYMENT.md** | `./docs/architecture/ARCHITECTURE_DEPLOYMENT.md` | 架构与部署方案 | ✅ 生效 |
+| **system-design.md** | `./echo-server/docs/core/architecture/system-design.md` | Echo Server 系统架构（100% 自研） | ✅ 生效 |
+| ~~ECHO_ARCHITECTURE.md~~ | `./docs/archive/ECHO_ARCHITECTURE.md` | ~~整体架构设计~~ | 🗃️ 已归档（与 v5 冲突） |
+| ~~ECHO_DESIGN_PRINCIPLES.md~~ | `./docs/archive/ECHO_DESIGN_PRINCIPLES.md` | ~~设计原则~~ | 🗃️ 已归档（与 v5 冲突） |
 
 ---
 
@@ -48,8 +52,8 @@
 | **ECHO_ADMIN_PANEL.md** | `./docs/planning/ECHO_ADMIN_PANEL.md` | 管理面板设计 | ⭐⭐⭐⭐ |
 | **ECHO_ADMIN_IA.md** | `./docs/planning/ECHO_ADMIN_IA.md` | 管理面板信息架构 | ⭐⭐⭐⭐ |
 | **ECHO_ADMIN_IA_PART2.md** | `./docs/planning/ECHO_ADMIN_IA_PART2.md` | 管理面板信息架构（第二部分） | ⭐⭐⭐⭐ |
-| **ECHO_DEVELOPMENT_ROADMAP.md** | `./docs/planning/ECHO_DEVELOPMENT_ROADMAP.md` | 开发路线图 | ⭐⭐⭐⭐ |
-| **NEXT_STEPS.md** | `./docs/planning/NEXT_STEPS.md` | 下一步计划 | ⭐⭐⭐ |
+| ~~ECHO_DEVELOPMENT_ROADMAP.md~~ | `./docs/archive/ECHO_DEVELOPMENT_ROADMAP.md` | ~~开发路线图~~ | 🗃️ 已归档（旧版） |
+| ~~NEXT_STEPS.md~~ | `./docs/archive/NEXT_STEPS.md` | ~~下一步计划~~ | 🗃️ 已归档（一次性操作） |
 
 ---
 
