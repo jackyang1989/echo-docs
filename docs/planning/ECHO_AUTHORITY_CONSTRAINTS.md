@@ -230,74 +230,76 @@ Square 存储媒体必须引用 `file_id`（或 file_ids），不得以 URL 作�
 
 <a id="internal-transport-evolution-constraint"></a>
 
-## 11. Internal Transport Evolution Constraint (P0)
+## 11. 内部传输演进约束（P0）
 
-### Hard Constraints (Week 1-8)
+术语约定：后续所有文档统一使用术语“内部传输迁移（HTTP → gRPC，行为保持）”，不得使用“gRPC refactor”等替代说法。
 
-1. Until the end of Week 8, Gateway -> Auth / Message / Sync MUST continue using HTTP REST as the internal transport.
-   - Temporary compatibility layers, stubs, fake success, or skipping logic are strictly forbidden.
+### 硬约束（Week 1-8）
 
-2. Week 7-8 scope is strictly limited to:
-   - Real-time push delivery (PushUpdate)
-   - update_log based replay
-   - MTProto end-to-end consistency (two devices identical)
-   - stability, load testing, monitoring
+1. 在 Week 8 结束之前，Gateway -> Auth / Message / Sync 的内部传输必须继续使用 HTTP REST。
+   - 严禁临时兼容层、stub、fake success、跳过逻辑等行为。
 
-   Any gRPC refactor or transport-layer replacement is prohibited during this period.
+2. Week 7-8 的范围严格限制为：
+   - 实时推送投递（PushUpdate）
+   - 基于 update_log 的回放
+   - MTProto 端到端一致性（两设备结果完全一致）
+   - 稳定性、压测、监控
 
-### When gRPC Migration Is Allowed
+   在此期间，禁止任何 gRPC 改造或通信层替换。
 
-- Internal transport migration (HTTP -> gRPC) is only allowed starting from:
-  **Week 9 (Phase 2, first iteration)**
+### 何时允许进行内部传输迁移（HTTP -> gRPC，行为保持）
 
-- The migration must be:
-  - behavior-preserving
-  - fully reversible
-  - independently verifiable via MTProto E2E tests
+- 内部传输迁移（HTTP -> gRPC，行为保持）仅允许从以下时点开始：
+  **Week 9（Phase 2 第一个迭代）**
 
-### Mandatory Migration Procedure
+- 迁移必须满足：
+  - 行为保持：迁移前后外部可观察行为完全一致
+  - 可回滚：支持一键回退到 HTTP
+  - 可独立验收：可通过 MTProto E2E 测试独立验证
 
-Step A. Extract interfaces first (no behavior change)
+### 强制迁移流程（必须按步骤执行）
 
-- Define backend interfaces inside Gateway:
+Step A. 先抽象接口（不改行为）
+
+- 在 Gateway 内定义 Backend 接口：
   - AuthBackend.SendCode/SignIn/SignUp
   - MessageBackend.SendMessage/GetHistory/GetDialogs/ReadHistory/DeleteMessages
   - SyncBackend.PushUpdate/GetState/GetDifference
-- Provide an HTTP implementation (existing REST) first and keep tests green.
+- 先提供 HTTP 实现（复用现有 REST），保证测试全绿。
 
-Step B. Define gRPC protos (only cover implemented capabilities)
+Step B. 定义 gRPC Proto（只覆盖已实现能力）
 
-- Create new proto files:
+- 新建 proto 文件：
   - `/api/proto/echo_auth.proto`
   - `/api/proto/echo_message.proto`
   - `/api/proto/echo_sync.proto`
-- Generate Go code via buf or protoc.
-- Only include Week 1-8 implemented P0 methods. Do not add unimplemented features.
+- 用 buf 或 protoc 生成 Go 代码。
+- 仅允许把 Week 1-8 已实现的 P0 方法写进 proto，禁止提前加入未实现功能。
 
-Step C. Expose gRPC on services without removing HTTP
+Step C. 服务端同时暴露 gRPC（HTTP 不删）
 
-- Auth service adds a gRPC server.
-- HTTP handlers and gRPC handlers MUST share the same business logic (same UseCase/Service). Do not duplicate logic.
-- Repeat for Message/Sync.
-- Deliverable: HTTP and gRPC both available, behavior identical.
+- Auth 服务新增 gRPC server。
+- HTTP handler 与 gRPC handler 必须复用同一业务逻辑层（同一 UseCase/Service），禁止复制逻辑。
+- Message/Sync 同样处理。
+- 产物：HTTP 与 gRPC 两条入口并存，行为一致。
 
-Step D. Switch Gateway to gRPC with rollback
+Step D. Gateway 切换到 gRPC（可回滚）
 
-- Add config: `BACKEND_TRANSPORT=grpc|http` (default: http).
-- In staging/local, switch to grpc and run E2E:
-  - two devices identical
-  - offline gap recovery via getDifference
-  - update_log replay correctness
-- After passing, change default to grpc but keep HTTP rollback for at least 2 weeks.
+- 增加配置项：`BACKEND_TRANSPORT=grpc|http`（默认 http）。
+- 在 staging/本地先切到 grpc 跑 E2E：
+  - 两设备结果完全一致
+  - 断网补洞可收敛（getDifference）
+  - update_log 回放正确
+- 通过后将默认改为 grpc，但必须保留 HTTP 回滚开关至少 2 周。
 
-Step E. Remove HTTP (convergence)
+Step E. 删除 HTTP（收口）
 
-- After 2 weeks without rollback in production, remove Gateway HTTP backend implementation and service HTTP routes (except /health if needed).
-- Update docs to explicitly state:
-  - Internal transport = gRPC
-  - External protocol = MTProto
+- 线上连续 2 周无回滚后，删除 Gateway 的 HTTP Backend 实现与服务端 HTTP 路由（如需要可保留 /health）。
+- 更新文档，明确：
+  - 内部传输 = gRPC
+  - 外部协议 = MTProto
 
-### Acceptance Gates
+### 验收门禁
 
-- Before/after migration: MTProto E2E MUST stay identical (two devices), offline gap recovery MUST work (getDifference), message order/read/delete behaviors MUST be unchanged.
-- Any behavior difference is a failure. No "ship now, fix later".
+- 迁移前后：MTProto E2E 必须保持完全一致（两设备），断线补洞必须可用（getDifference），消息顺序/已读/删除等行为必须不变。
+- 任何行为差异都视为失败，不允许“先上线再修”。
