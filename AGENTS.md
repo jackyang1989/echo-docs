@@ -469,7 +469,8 @@ Echo 项目的核心开发文档集中存放在 `docs/core/` 目录，**严禁�
 ### 📁 核心文档目录结构
 
 ```
-echo-docs/echo-server/docs/core/         # Echo 服务端核心文档（100% 自研）
+echo-server/docs/core/                   # Echo 服务端核心文档（100% 自研）
+                                         # 实际存储：echo-docs/echo-server/docs/core/
 ├── README.md                          # 核心文档索引和保护规则
 ├── changes/                           # 代码变更记录（最重要）
 │   ├── CHANGELOG.md                  # 变更总览
@@ -492,7 +493,8 @@ echo-docs/echo-server/docs/core/         # Echo 服务端核心文档（100% 自
     ├── commit-conventions.md         # 提交规范
     └── review-checklist.md           # 审查清单
 
-echo-docs/echo-android-client/docs/core/     # Android 客户端核心文档
+echo-android-client/docs/core/           # Android 客户端核心文档
+                                         # 实际存储：echo-docs/echo-android-client/docs/core/
 ├── README.md                          # 核心文档索引和保护规则
 ├── changes/                           # 代码变更记录（最重要）
 │   ├── CHANGELOG.md                  # 变更总览
