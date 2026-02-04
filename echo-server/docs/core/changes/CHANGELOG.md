@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 预计新增 4 个文件 + 修改 3 个文件
 
 ### Fixed
+- [ECHO-BUG-028] 登录后 Post-Auth 路由缺失 user_id (2026-02-04) ✅ 已解决
 - [ECHO-BUG-026] RSA 私钥与客户端公钥不匹配 (2026-02-04) ✅ 已解决
   - 诊断发现服务器私钥与客户端编译时嵌入的公钥不匹配
   - 从 `echo-server-source/echod/bin/server_pkcs1.key` 复制正确私钥
