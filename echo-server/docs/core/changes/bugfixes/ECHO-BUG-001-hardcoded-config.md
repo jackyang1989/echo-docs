@@ -363,6 +363,7 @@ go get github.com/spf13/viper
 - `pkg/config/load.go` - YAML 配置加载器
 - `pkg/config/validate.go` - Fail-fast 配置验证（符合 §12.3）
 - `pkg/config/convert.go` - 配置转换适配器
+- `pkg/config/dsn.go` - 统一生成 Database DSN
 
 **修改文件**:
 - `cmd/gateway/main.go:29-52` - 删除 34 行硬编码配置，使用配置加载器
@@ -370,8 +371,24 @@ go get github.com/spf13/viper
 
 **验证**: ✅ 编译通过 + 配置加载测试通过
 
+#### 6. ✅ Auth/Message/Sync 服务 DB 配置硬编码 (5433 → YAML)
+
+**问题**: `cmd/auth`, `cmd/message`, `cmd/sync` 仍硬编码 `localhost:5433`
+
+**修复**:
+- 新增 `-config` 参数，默认读取 `configs/gateway.yaml`
+- 新增 `-db` 可选覆盖配置
+- 全部改为使用 `config.DatabaseDSN()` 生成连接串
+
+**修改文件**:
+- `cmd/auth/main.go:37-74`
+- `cmd/message/main.go:39-76`
+- `cmd/sync/main.go:38-76`
+
+**验证**: ✅ 服务健康检查全部通过
+
 ---
 
 **修复状态**: ✅ 已完成（彻底修复，无遗留项）
-**测试状态**: ⏳ 待用户验证
+**测试状态**: ✅ 本地服务健康检查通过
 **文档状态**: ✅ 已完成
