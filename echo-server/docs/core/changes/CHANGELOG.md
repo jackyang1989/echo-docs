@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- [ECHO-FEATURE-008] Week6 用户模块 - users.getFullUser 完整信息 (2026-02-04)
+  - 补全 Gateway 的 `users.getFullUser` Rpc 路径，使 user 服务返回 `users.UserFull` + `users.Users`。
+  - `gnet.UserServiceClient` 增加 `/user/getFullUser` 调用；`requireUserID`/`buildUsersUserFull` 保证 MTProto 响应结构合法。
+  - `go test ./internal/gateway` 通过，确保新分支编译；待用户服务运行时可用 curl 验证完整字段。
 - [ECHO-FEATURE-006] Week 5-6 E2E 集成测试报告 (2026-02-03) ✨ NEW
   - HTTP API 全链路测试通过（Auth/Message/Sync）
   - 铁律 A & B 验证成功
@@ -98,6 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 变更记录索引
 
 ### 功能变更 (Features)
+- [ECHO-FEATURE-008](features/ECHO-FEATURE-008-users-getfulluser.md) - Week6 用户模块 - users.getFullUser 完整信息 (2026-02-04)
 - [ECHO-FEATURE-006](features/ECHO-FEATURE-006-e2e-test-report.md) - Week 5-6 E2E 测试报告 (2026-02-03) ✨ NEW
 - [ECHO-FEATURE-005](features/ECHO-FEATURE-005-sync-service.md) - Sync 服务实现 (2026-02-03)
 - [ECHO-FEATURE-004](features/ECHO-FEATURE-004-message-service.md) - Message 服务实现 (2026-02-03)
