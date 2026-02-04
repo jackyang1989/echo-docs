@@ -54,6 +54,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 预计新增 4 个文件 + 修改 3 个文件
 
 ### Fixed
+- [ECHO-BUG-030] auth.initPasskeyLogin RPC 未处理 (2026-02-04) ✅ 已解决
+  - Layer 219+ 新增 RPC，导致 Samsung 设备无法进入验证码页面
+  - 在 `rpc_router.go` 和 `server_gnet.go` 添加处理器，返回 PASSKEY_NOT_SUPPORTED 错误
+  - 客户端收到错误后自动回退到传统短信验证流程
+- [ECHO-BUG-029] PostgreSQL 用户 ID 序列不同步 (2026-02-04) ✅ 已解决
+  - 用户注册时报 `duplicate key violates unique constraint "users_pkey"`
+  - 原因：`users_id_seq` 序列与已有最大 ID 不同步
+  - 通过 `nextval('users_id_seq')` 修复序列值
 - [ECHO-BUG-028] 登录后 Post-Auth 路由缺失 user_id (2026-02-04) ✅ 已解决
 - [ECHO-BUG-026] RSA 私钥与客户端公钥不匹配 (2026-02-04) ✅ 已解决
   - 诊断发现服务器私钥与客户端编译时嵌入的公钥不匹配
