@@ -356,8 +356,22 @@ go get github.com/spf13/viper
 
 **结论**: 非违规 - 实际逻辑在 server_gnet.go:312-332 实现，RPC 处理器正确返回 True
 
+#### 5. ✅ cmd/gateway/main.go 硬编码配置 (完整修复)
+
+**新增文件**:
+- `pkg/config/config.go` - 配置结构定义（映射 YAML）
+- `pkg/config/load.go` - YAML 配置加载器
+- `pkg/config/validate.go` - Fail-fast 配置验证（符合 §12.3）
+- `pkg/config/convert.go` - 配置转换适配器
+
+**修改文件**:
+- `cmd/gateway/main.go:29-52` - 删除 34 行硬编码配置，使用配置加载器
+- `configs/gateway.yaml:18-19` - 修正 RSA 密钥路径
+
+**验证**: ✅ 编译通过 + 配置加载测试通过
+
 ---
 
-**修复状态**: ✅ 已完成 (核心修复)
+**修复状态**: ✅ 已完成（彻底修复，无遗留项）
 **测试状态**: ⏳ 待用户验证
 **文档状态**: ✅ 已完成
