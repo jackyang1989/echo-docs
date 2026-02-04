@@ -36,6 +36,7 @@
 在 `bindAuthorizedSession` 中同步设置：
 - `ctx.userID = userID`
 - `ctx.preAuthPhase = PreAuthPhaseAuthorized`
+ - 立即执行 `SessionStore.BindUser`（去除异步提交，避免首次 Post-Auth 读不到 user_id）
 
 ### 修复点 2：Session 查询返回 user_id
 `SessionStore.GetSession` 查询新增 `user_id` 字段，并回填到 `SessionInfo`。
