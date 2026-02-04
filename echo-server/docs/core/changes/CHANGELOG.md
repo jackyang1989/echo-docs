@@ -54,6 +54,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 预计新增 4 个文件 + 修改 3 个文件
 
 ### Fixed
+- [ECHO-BUG-031] 客户端初始化 API 请求被 Gateway 拦截 (2026-02-05) ✅ 已解决
+  - 症状：登录后/重装后 App UI 卡顿，无法加载配置
+  - 原因：Pre-Auth 白名单机制过于严格，拦截了 `help.getAppConfig` 等必需 RPC
+  - 修复：修改 `pre_auth.go` 策略为全放行，由 `rpc_router.go` 统一处理并返回 `METHOD_NOT_IMPLEMENTED`
 - [ECHO-BUG-030] auth.initPasskeyLogin RPC 未处理 (2026-02-04) ✅ 已解决
   - Layer 219+ 新增 RPC，导致 Samsung 设备无法进入验证码页面
   - 在 `rpc_router.go` 和 `server_gnet.go` 添加处理器，返回 PASSKEY_NOT_SUPPORTED 错误

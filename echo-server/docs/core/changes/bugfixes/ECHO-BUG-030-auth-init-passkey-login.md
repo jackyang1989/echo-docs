@@ -48,34 +48,26 @@ Echo 服务端的 `rpc_router.go` 和 `server_gnet.go` 没有处理该 RPC，导
 **新增代码** (第 254-264 行):
 ```go
 case *mtproto.TLAuthInitPasskeyLogin:
-    // Layer 219+ 新增的 Passkey 登录 RPC
-    // Echo 暂不支持 Passkey，返回错误让客户端回退到传统短信登录流程
-    logx.Infof("🔐 [RPC] auth.initPasskeyLogin: api_id=%d (not supported, client should fallback)", req.ApiId)
-
-    // 保存 API 凭证到 session（以备后续使用）
-    ctx.apiID = req.ApiId
-    ctx.apiHash = req.ApiHash
-
-    // 返回错误，客户端会回退到 auth.sendCode 流程
-    return nil, fmt.Errorf("PASSKEY_NOT_SUPPORTED")
+    // Layer 219+ 新增的 Passkey 登录 RPC。
+    // Echo 暂不支持 Passkey：必须返回既有错误码（不得新增 TL/协议）
+    logx.Warnf("⚠️ [RPC] auth.initPasskeyLogin not implemented (client should fallback)")
+    return nil, mtproto.ErrMethodNotImpl
 ```
 
 ### 2. server_gnet.go 修改
 
 **文件**: `internal/gateway/server_gnet.go`
 
-**修改代码** (第 446-449 行):
+**修改代码** (第 444-471 行):
 ```go
 case *mtproto.TLAuthInitPasskeyLogin:
-    // ✅ Passkey 登录暂不支持，委托给 rpc_router 返回错误让客户端回退
-    logx.Infof("🔐 [Pre-Auth] auth.initPasskeyLogin: api_id=%d (passkey not supported)", req.ApiId)
-    rpcResult, rpcErr = s.rpcRouter.HandleRPC(ctx, req)
+    logx.Warnf("⚠️ [Pre-Auth] auth.initPasskeyLogin not implemented")
+    rpcErr = mtproto.ErrMethodNotImpl
 ```
 
 **修复说明**：
-- 原代码尝试将 `auth.initPasskeyLogin` 映射为 `auth.sendCode`
-- 但 `TLAuthInitPasskeyLogin` 没有 `PhoneNumber` 字段，导致编译错误
-- 修复后直接委托给 `rpc_router` 返回不支持错误
+- 原代码尝试将 `auth.initPasskeyLogin` 映射为 `auth.sendCode`（违宪）
+- 现改为 **明确返回 METHOD_NOT_IMPL**，不做任何兼容兜底
 
 ## 影响范围
 
@@ -96,9 +88,9 @@ case *mtproto.TLAuthInitPasskeyLogin:
 | Layer | auth.initPasskeyLogin | 处理方式 |
 |-------|----------------------|----------|
 | < 219 | 不存在 | N/A |
-| ≥ 219 | 存在 | 返回 PASSKEY_NOT_SUPPORTED 错误 |
+| ≥ 219 | 存在 | 返回 METHOD_NOT_IMPL 错误 |
 
-客户端收到错误后会自动回退到传统的 `auth.sendCode` 流程。
+客户端收到 `METHOD_NOT_IMPL` 后会回退到传统的 `auth.sendCode` 流程。
 
 ## 未来改进
 
