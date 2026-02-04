@@ -322,6 +322,42 @@ go get github.com/spf13/viper
 
 ---
 
-**修复状态**: 🚧 进行中
-**测试状态**: ⏳ 待验证
+## ✅ 修复实施记录
+
+### 已完成修复 (2026-02-04)
+
+#### 1. ✅ help.getConfig 硬编码 IP (ROOT CAUSE)
+
+**修改文件**:
+- `internal/gateway/rpc_router.go:205-211` - 添加 cfg 字段到 RPCRouter
+- `internal/gateway/rpc_router.go:216-224` - NewRPCRouter 接受 Config 参数
+- `internal/gateway/rpc_router.go:895-903` - 从 cfg.Gateway.ExternalIP 读取，删除硬编码
+- `internal/gateway/server.go:110-112` - 传递 config 引用
+
+**验证**: ✅ 编译通过
+
+#### 2. ✅ auth.resendCode 硬编码 API ID/Hash
+
+**修改文件**:
+- `internal/gateway/conn.go:33-53` - 添加 apiID/apiHash 字段
+- `internal/gateway/rpc_router.go:230-250` - auth.sendCode 保存 API 凭据到 session
+- `internal/gateway/rpc_router.go:253-278` - auth.resendCode 从 session 读取
+
+**验证**: ✅ 编译通过
+
+#### 3. ✅ auth.cancelCode 假成功
+
+**修改文件**:
+- `internal/gateway/rpc_router.go:280-285` - 返回 NOT_IMPLEMENTED 错误
+
+**验证**: ✅ 编译通过
+
+#### 4. ℹ️ auth.bindTempAuthKey 验证
+
+**结论**: 非违规 - 实际逻辑在 server_gnet.go:312-332 实现，RPC 处理器正确返回 True
+
+---
+
+**修复状态**: ✅ 已完成 (核心修复)
+**测试状态**: ⏳ 待用户验证
 **文档状态**: ✅ 已完成
