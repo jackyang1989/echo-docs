@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- [ECHO-FEATURE-009] Post-Auth RPC 初始化桩实现 (2026-02-05) ✨ NEW
+  - 实现 8 个核心初始化 RPC（如 `account.getThemes`, `messages.getDialogFilters`）
+  - 解决客户端登录后 UI 卡死/转圈问题
+  - 确保完全兼容多版本客户端协议（DialogFilters 双版本支持）
 - [ECHO-FEATURE-008] Week6 用户模块 - users.getFullUser 完整信息 (2026-02-04)
   - 补全 Gateway 的 `users.getFullUser` Rpc 路径，使 user 服务返回 `users.UserFull` + `users.Users`。
   - `gnet.UserServiceClient` 增加 `/user/getFullUser` 调用；`requireUserID`/`buildUsersUserFull` 保证 MTProto 响应结构合法。
@@ -45,23 +49,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 Gateway 监听端口为 10443
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
-### Planned
-- [ECHO-FEATURE-007] Pre-Auth RPC 白名单机制 (2026-02-04) 🔴 P0 📋 计划中
-  - 修复客户端在 TempAuthKey 阶段无法发送 help.getConfig 的问题
-  - 实现显式 Pre-Auth RPC 白名单（help.getConfig、help.getNearestDc、help.getAppConfig）
-  - 实现本地 help.getConfig 处理器（配置来自 gateway.yaml，不依赖数据库）
-  - 白名单采用显式列表 + 单元测试，禁止宽泛匹配
-  - 预计新增 4 个文件 + 修改 3 个文件
-
 ### Fixed
+- [ECHO-BUG-032] Session 使用 auth_key_id 选择错误导致预授权读取失败 (2026-02-05) ✅ 已解决
+  - 症状：预授权阶段出现 Session 不存在/无法读取
+  - 原因：Session 表以 auth_key_id 作为主键，但逻辑使用 permAuthKeyId 写入/读取
+  - 修复：统一使用当前连接的 auth_key_id 进行 Session 读写
 - [ECHO-BUG-031] 客户端初始化 API 请求被 Gateway 拦截 (2026-02-05) ✅ 已解决
   - 症状：登录后/重装后 App UI 卡顿，无法加载配置
-  - 原因：Pre-Auth 白名单机制过于严格，拦截了 `help.getAppConfig` 等必需 RPC
-  - 修复：修改 `pre_auth.go` 策略为全放行，由 `rpc_router.go` 统一处理并返回 `METHOD_NOT_IMPLEMENTED`
+  - 原因：Pre-Auth 白名单未覆盖初始化 RPC + 未实现 RPC 采用 stub/空结果
+  - 修复：补齐白名单并在 Pre-Auth/RPC Router 返回 `METHOD_NOT_IMPLEMENTED`
 - [ECHO-BUG-030] auth.initPasskeyLogin RPC 未处理 (2026-02-04) ✅ 已解决
   - Layer 219+ 新增 RPC，导致 Samsung 设备无法进入验证码页面
-  - 在 `rpc_router.go` 和 `server_gnet.go` 添加处理器，返回 PASSKEY_NOT_SUPPORTED 错误
-  - 客户端收到错误后自动回退到传统短信验证流程
+  - 在 `rpc_router.go` 和 `server_gnet.go` 返回 `METHOD_NOT_IMPLEMENTED`
+  - 客户端收到错误后回退到传统短信验证流程
 - [ECHO-BUG-029] PostgreSQL 用户 ID 序列不同步 (2026-02-04) ✅ 已解决
   - 用户注册时报 `duplicate key violates unique constraint "users_pkey"`
   - 原因：`users_id_seq` 序列与已有最大 ID 不同步
@@ -71,9 +71,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 诊断发现服务器私钥与客户端编译时嵌入的公钥不匹配
   - 从 `echo-server-source/echod/bin/server_pkcs1.key` 复制正确私钥
   - DH 握手成功，但仍需解决 Pre-Auth RPC 问题
-- [ECHO-BUG-024] Gateway RPC 响应发送逻辑缺失 (2026-02-04) ⏳ 部分解决
+- [ECHO-BUG-024] Gateway RPC 响应发送逻辑缺失 (2026-02-04) ✅ 已解决
   - 修复 server_gnet.go 第 360-370 行 RPC 响应发送逻辑
-  - 客户端连接问题仍未解决（已被 ECHO-BUG-025 解决）
+  - 客户端连接问题已由 ECHO-BUG-025 解决
 - [ECHO-FEATURE-001] 修复 gnet v2 API 兼容性问题 (2026-02-02)
 - [ECHO-FEATURE-001] 修复编译错误 - 未使用的导入 (2026-02-02)
 
@@ -114,6 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 变更记录索引
 
 ### 功能变更 (Features)
+- [ECHO-FEATURE-009](features/ECHO-FEATURE-009-post-auth-rpc-stubs.md) - Post-Auth RPC 初始化桩实现 (2026-02-05) ✨ NEW
 - [ECHO-FEATURE-008](features/ECHO-FEATURE-008-users-getfulluser.md) - Week6 用户模块 - users.getFullUser 完整信息 (2026-02-04)
 - [ECHO-FEATURE-006](features/ECHO-FEATURE-006-e2e-test-report.md) - Week 5-6 E2E 测试报告 (2026-02-03) ✨ NEW
 - [ECHO-FEATURE-005](features/ECHO-FEATURE-005-sync-service.md) - Sync 服务实现 (2026-02-03)

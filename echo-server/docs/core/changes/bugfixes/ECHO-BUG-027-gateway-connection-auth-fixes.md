@@ -192,36 +192,28 @@ dbDSN = flag.String("db", "postgres://echo:echo123@localhost:5433/echo?sslmode=d
 Pre-Auth switch 语句缺少这些 RPC 的处理逻辑，导致合法的预认证请求被拒绝。
 
 ### 修复方案
-在 Pre-Auth switch 中添加所有缺失的 RPC 处理：
+按项目宪法要求 **不允许 stub/mock**，未实现的 RPC 必须返回明确错误：
 
 ```go
-// internal/gateway/server_gnet.go 第 396-422 行
+// internal/gateway/server_gnet.go
 case *mtproto.TLHelpGetAppConfig61E3F854:
-    // ✅ 返回空 AppConfig
-    logx.Infof("📱 [Pre-Auth] help.getAppConfig: hash=%d", req.Hash)
-    rpcResult = mtproto.MakeTLHelpAppConfigNotModified(nil).To_Help_AppConfig()
-
+    logx.Warnf("⚠️ [Pre-Auth] help.getAppConfig not implemented")
+    rpcErr = mtproto.ErrMethodNotImpl
 case *mtproto.TLLangpackGetLangPack:
-    // ✅ 返回空语言包
-    logx.Infof("📱 [Pre-Auth] langpack.getLangPack: lang_pack=%s, lang_code=%s", req.LangPack, req.LangCode)
-    rpcResult = mtproto.MakeTLLangPackDifference(&mtproto.LangPackDifference{
-        LangCode:    req.LangCode,
-        FromVersion: 0,
-        Version:     0,
-        Strings:     []*mtproto.LangPackString{},
-    }).To_LangPackDifference()
-
+    logx.Warnf("⚠️ [Pre-Auth] langpack.getLangPack not implemented")
+    rpcErr = mtproto.ErrMethodNotImpl
 case *mtproto.TLLangpackGetLanguages:
-    // ✅ 返回空语言列表
-    logx.Infof("📱 [Pre-Auth] langpack.getLanguages: lang_pack=%s", req.LangPack)
-    rpcResult = &mtproto.Vector_LangPackLanguage{
-        Datas: []*mtproto.LangPackLanguage{},
-    }
-
+    logx.Warnf("⚠️ [Pre-Auth] langpack.getLanguages not implemented")
+    rpcErr = mtproto.ErrMethodNotImpl
 case *mtproto.TLHelpGetCountriesList:
-    // ✅ 返回空国家列表
-    logx.Infof("📱 [Pre-Auth] help.getCountriesList: lang_code=%s, hash=%d", req.LangCode, req.Hash)
-    rpcResult = mtproto.MakeTLHelpCountriesListNotModified(nil).To_Help_CountriesList()
+    logx.Warnf("⚠️ [Pre-Auth] help.getCountriesList not implemented")
+    rpcErr = mtproto.ErrMethodNotImpl
+case *mtproto.TLLangpackGetStrings:
+    logx.Warnf("⚠️ [Pre-Auth] langpack.getStrings not implemented")
+    rpcErr = mtproto.ErrMethodNotImpl
+case *mtproto.TLLangpackGetDifference:
+    logx.Warnf("⚠️ [Pre-Auth] langpack.getDifference not implemented")
+    rpcErr = mtproto.ErrMethodNotImpl
 ```
 
 **注意**：还添加了 `TLInvokeWithLayer` 和 `TLInitConnection` 的递归解包处理（第 418-456 行），但实际运行中发现 `getRpcMethod` 函数已经自动处理了解包，因此这些 case 不会被匹配到（属于防御性编程）。
