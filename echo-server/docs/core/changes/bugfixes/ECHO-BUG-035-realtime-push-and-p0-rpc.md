@@ -27,6 +27,7 @@
    - 解析 update JSON，构造 `updates` 对象（含 `Updates/Users/State`）。
    - 使用 `auth_key_id + salt + session_id` 正确加密。
    - 通过 `serializeToBuffer2` + AES-IGE 加密发送。
+   - 会话重连时补注册到 `SessionRegistry`，保证在线推送可达。
 
 2. **补齐 P0 RPC**
    - `messages.getDialogFilters` 返回空过滤器列表（真实状态）。
@@ -45,6 +46,7 @@
 ## ✅ 影响范围
 
 - `echo-server/internal/gateway/push_handler.go`
+- `echo-server/internal/gateway/server_gnet.go`
 - `echo-server/internal/gateway/push_token_store.go`
 - `echo-server/internal/gateway/server.go`
 - `echo-server/internal/gateway/rpc_router.go`
