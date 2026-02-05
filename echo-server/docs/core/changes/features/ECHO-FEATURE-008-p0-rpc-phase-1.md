@@ -115,15 +115,25 @@
   - **Auth Service**: 提供 `/auth/logOut` 接口（目前仅记录日志，未来可扩展）。
   - **依赖注入**: 修复了 `RPCRouter` 缺失 `AuthKeyStore` 的问题。
 
+### 3.8 `account.getPassword` & Other RPCs
+- **功能**: 两步验证状态检查及其他辅助接口。
+- **实现**:
+  - `account.getPassword`: 返回 `HasPassword: false` (Stub)。
+  - `account.registerDevice`: 接入 `PushTokenStore` 存储设备 Token。
+  - `messages.getDialogFilters`: 返回空列表。
+  - `contacts.getStatuses`: 返回空列表。
+
 ## 4. 剩余范围 (Phase 1.2+)
 
-### 其他 RPC
-- `account.getPassword`
+### Foundation Fixes
+- `TL Serialization` for update_log
+- `IGE Encryption` for push
+- `Pts Atomicity`
 
 ## 5. 验证 (Verification)
 
 - **编译检查**: 验证通过 `go build ./cmd/gateway/main.go`。
-- **逻辑检查**: `auth.logOut` 确实删除了 AuthKey，下次握手将失效。
+- **逻辑检查**: `auth.logOut` 确实删除了 AuthKey，`account.getPassword` 返回 False，`registerDevice` 成功写入 Token。
 
 ## 5. 验证 (Verification)
 

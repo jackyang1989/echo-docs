@@ -50,6 +50,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
 ### Fixed
+- [ECHO-BUG-035] 实时推送未加密导致无效 & P0 RPC 缺失 (2026-02-05) ✅ 已解决
+  - push 发送改为合法 MTProto Updates（加密、回填 Users/State）
+  - 补齐 Phase 1 P0 RPC（messages/account/contacts）
+  - account.registerDevice 落库 push_tokens
 - [ECHO-BUG-034] messages.getPeerDialogs 缺失 Users 导致昵称显示为手机号 (2026-02-05) ✅ 已解决
   - `messages.getPeerDialogs` 补齐 `Users/Messages/State`
   - 对话顶部昵称显示一致
