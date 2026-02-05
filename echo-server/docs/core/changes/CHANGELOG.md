@@ -50,6 +50,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
 ### Fixed
+- [ECHO-BUG-038] 预授权未恢复已登录会话 & FutureSalts 封装调用丢失 (2026-02-05) ✅ 已解决
+  - Pre-Auth 阶段恢复授权不再依赖 `permAuthKeyId`
+  - `invokeWithLayer/initConnection` 内部的 `get_future_salts` 在 Pre-Auth 直接处理
+  - 登录页 `AUTH_KEY_UNREGISTERED` 弹窗被静默处理
 - [ECHO-BUG-037] 自身用户未标记 Self 导致设置页/昵称异常 (2026-02-05) ✅ 已解决
   - `User` 对象对当前用户设置 `Self=true`
   - 设置页恢复完整入口，昵称显示一致
