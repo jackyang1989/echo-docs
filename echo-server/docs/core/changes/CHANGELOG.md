@@ -50,6 +50,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
 ### Fixed
+- [ECHO-BUG-037] 自身用户未标记 Self 导致设置页/昵称异常 (2026-02-05) ✅ 已解决
+  - `User` 对象对当前用户设置 `Self=true`
+  - 设置页恢复完整入口，昵称显示一致
 - [ECHO-BUG-036] 会话未绑定 user_id 导致预授权循环 & RPC 静默丢弃 (2026-02-05) ✅ 已解决
   - `BindUser` 校验 rowsAffected，缺失则返回错误
   - 预授权绑定失败时创建真实 session 记录并重试绑定
