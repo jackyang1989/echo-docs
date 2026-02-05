@@ -81,11 +81,30 @@
   - **Data Hydration**: 从消息中提取 `FromID` 和 `PeerID`，并调用 `UserClient.GetUsers` 批量获取 `UserData`。
   - 组装 `Messages_MessagesSlice`，确保 UI 能显示发送者头像和名称。
 
+### 3.4 `account.getGlobalPrivacySettings`
+- **策略**: 必须返回默认值以防止 UI 卡顿。
+- **实现**: Gateway 直接返回 `GlobalPrivacySettings`（默认为全关闭），如 `ArchiveAndMuteNewNoncontactPeers = false`。
+- **依据**: 真实反映当前系统不支持自动归档功能的现状（Feature Disabled）。
+
+### 3.5 `messages.getPinnedDialogs`
+完整实现了置顶会话的获取逻辑。
+
+#### Repository 层 (`DialogRepository`)
+- 实现了 `GetPinnedDialogs`，支持按 `pinned_order DESC` 排序。
+- 保证了数据层面的正确性。
+
+#### Service/API 层 (`MessageService`)
+- 暴露了 `/message/getPinnedDialogs` 接口。
+
+#### Gateway 层
+- `RPCRouter` 实现了 `TLMessagesGetPinnedDialogs`。
+- 复用了 Dialog，Message，User 的转换和补全逻辑，返回 `messages.peerDialogs`。
+
 ## 4. 剩余范围 (Phase 1.2+)
 
 ### 其他 RPC
-- `messages.getPinnedDialogs`
-- `account.getGlobalPrivacySettings`
+- `contacts.resolveUsername`
+- `auth.logOut`
 
 ## 5. 验证 (Verification)
 

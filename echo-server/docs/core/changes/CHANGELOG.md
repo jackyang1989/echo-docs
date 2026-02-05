@@ -50,6 +50,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
 ### Fixed
+- [ECHO-BUG-034] messages.getPeerDialogs 缺失 Users 导致昵称显示为手机号 (2026-02-05) ✅ 已解决
+  - `messages.getPeerDialogs` 补齐 `Users/Messages/State`
+  - 对话顶部昵称显示一致
 - [ECHO-BUG-033] getDifference 回放缺失消息体 & 历史查询方向错误导致聊天转圈 (2026-02-05) ✅ 已解决
   - Gateway 构造完整 `updateNewMessage` 并回填 Users
   - `messages.getHistory` 改为双向查询，双方可见会话历史
