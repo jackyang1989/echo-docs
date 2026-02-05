@@ -100,11 +100,30 @@
 - `RPCRouter` 实现了 `TLMessagesGetPinnedDialogs`。
 - 复用了 Dialog，Message，User 的转换和补全逻辑，返回 `messages.peerDialogs`。
 
+### 3.6 `contacts.resolveUsername`
+- **功能**: 支持通过用户名搜索用户 (e.g., `@jack`).
+- **实现**:
+  - **Repo**: `UserRepository` 增加 `GetByUsername` 和 `Search(like)`。
+  - **Service**: 暴露 `/user/getByUsername` 接口。
+  - **Gateway**: `TLContactsResolveUsername` 处理器。
+  - **User Hydration**: 自动返回搜索到的 User 对象。
+
+### 3.7 `auth.logOut`
+- **功能**: 安全登出，销毁服务端 Session，防止重放攻击。
+- **实现**:
+  - **Gateway**: `TLAuthLogOut` 处理器调用 `AuthKeyStore.DeleteAuthKey` 物理删除 AuthKey。
+  - **Auth Service**: 提供 `/auth/logOut` 接口（目前仅记录日志，未来可扩展）。
+  - **依赖注入**: 修复了 `RPCRouter` 缺失 `AuthKeyStore` 的问题。
+
 ## 4. 剩余范围 (Phase 1.2+)
 
 ### 其他 RPC
-- `contacts.resolveUsername`
-- `auth.logOut`
+- `account.getPassword`
+
+## 5. 验证 (Verification)
+
+- **编译检查**: 验证通过 `go build ./cmd/gateway/main.go`。
+- **逻辑检查**: `auth.logOut` 确实删除了 AuthKey，下次握手将失效。
 
 ## 5. 验证 (Verification)
 
