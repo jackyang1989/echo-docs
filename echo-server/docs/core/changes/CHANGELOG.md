@@ -50,6 +50,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
 ### Fixed
+- [ECHO-BUG-039] 消息更新二进制编码错误 & 实时推送解析不兼容 (2026-02-05) ✅ 已解决
+  - Message 服务统一生成 TL 二进制更新并写入 update_log（含发送者）
+  - PushHandler 兼容 TL binary 与 legacy JSON，避免实时更新丢失
+  - Gateway 解码支持 updateReadHistory/updateDeleteMessages
 - [ECHO-BUG-038] 预授权未恢复已登录会话 & FutureSalts 封装调用丢失 (2026-02-05) ✅ 已解决
   - Pre-Auth 阶段恢复授权不再依赖 `permAuthKeyId`
   - `invokeWithLayer/initConnection` 内部的 `get_future_salts` 在 Pre-Auth 直接处理
