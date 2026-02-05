@@ -50,6 +50,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
 ### Fixed
+- [ECHO-BUG-036] 会话未绑定 user_id 导致预授权循环 & RPC 静默丢弃 (2026-02-05) ✅ 已解决
+  - `BindUser` 校验 rowsAffected，缺失则返回错误
+  - 预授权绑定失败时创建真实 session 记录并重试绑定
+  - Pre-Auth 非白名单 RPC 明确返回 `AUTH_KEY_UNREGISTERED`
 - [ECHO-BUG-035] 实时推送未加密导致无效 & P0 RPC 缺失 (2026-02-05) ✅ 已解决
   - push 发送改为合法 MTProto Updates（加密、回填 Users/State）
   - 补齐 Phase 1 P0 RPC（messages/account/contacts）
