@@ -24,6 +24,7 @@
 1. Login to Echo Android App.
 2. Navigate to Settings page.
 3. Observe missing menu items.
+4. Observe incorrect Profile Photo UI (missing camera icon in header, shows "Set Profile Photo" row instead).
 
 ---
 
@@ -34,6 +35,8 @@
     - `messages.getDialogFilters` -> "Chat Folders"
     - `payments.getStarsStatus` -> "My Stars"
     - `help.getAppConfig` -> Feature flags and localization tweaks (e.g. "Power Saving" label).
+    - `photos.getUserPhotos` -> Profile photo history.
+- **Profile Photo UI**: If `UserFull` is missing `Settings` or `NotifySettings`, or if `photos.*` RPCs are missing, the client may default to a "limited" or "onboarding" UI state, hiding the header edit icon.
 - These RPCs are currently unimplemented or missing in `rpc_router.go`.
 
 ### 2.2 Technical Details
@@ -56,6 +59,9 @@
     - Add `case *mtproto.TLMessagesGetDialogFilters...`: Return empty vector.
     - Add `case *mtproto.TLPaymentsGetStarsStatus`: Return zero balance.
     - Add `case *mtproto.TLHelpGetAppConfig...`: Return mocked JSON config (or empty JSON).
+    - Add `case *mtproto.TLPhotosGetUserPhotos`: Return empty list.
+    - Add `case *mtproto.TLPhotosUpdateProfilePhoto/UploadProfilePhoto`: Return error (stub).
+    - **Update `buildUsersUserFull`**: Populate `Settings` and `NotifySettings` in `UserFull` response to ensure client treats user as fully initialized.
 
 ---
 
