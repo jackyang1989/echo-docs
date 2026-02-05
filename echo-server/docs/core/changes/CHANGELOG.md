@@ -50,6 +50,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
 ### Fixed
+- [ECHO-BUG-041] Settings 页 Chat Folders 缺失 & 用户昵称显示为手机号 (2026-02-06) ✅ 已解决
+  - 实现 `messages.getDialogFilters` (兼容两版本后缀) 激活 Chat Folders 入口
+  - 增强 `User` 对象构造，填充 `Status` 字段，修复昵称显示降级问题
 - [ECHO-BUG-040] auth.sendCode/resendCode 响应类型/flags 不兼容 & account.updateStatus 未实现导致登录页弹错 (2026-02-05) 🟡 待验收
   - Gateway 从 Auth 响应提取 `code_type/length/next_type/timeout`，构造带正确 flags 的 `auth.sentCode`
   - `account.updateStatus` 返回 `boolTrue`，避免客户端弹 `METHOD_NOT_IMPL`
@@ -153,6 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ECHO-FEATURE-001](features/ECHO-FEATURE-001-gnet-v2-api-adaptation.md) - gnet v2 API 适配 (2026-02-02)
 
 ### Bug 修复 (Bug Fixes)
+- [ECHO-BUG-041](bugfixes/ECHO-BUG-041-settings-chat-folders-and-user-status.md) - Settings 页 Chat Folders 缺失 & 用户昵称显示为手机号 (2026-02-06)
 - [ECHO-BUG-033](bugfixes/ECHO-BUG-033-updates-diff-and-history.md) - getDifference 回放缺失消息体 & 历史查询方向错误导致聊天转圈 (2026-02-05)
 - [ECHO-BUG-025](bugfixes/ECHO-BUG-025-pre-auth-rpc-whitelist.md) - Pre-Auth RPC 白名单机制 (2026-02-04) 🔴 P0
 - [ECHO-BUG-024](bugfixes/ECHO-BUG-024-gateway-rpc-response-not-sent.md) - Gateway RPC 响应发送逻辑缺失 (2026-02-04) ⏳ 部分解决
