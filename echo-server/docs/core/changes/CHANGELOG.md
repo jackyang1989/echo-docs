@@ -50,6 +50,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
 ### Fixed
+- [ECHO-BUG-033] getDifference 回放缺失消息体 & 历史查询方向错误导致聊天转圈 (2026-02-05) ✅ 已解决
+  - Gateway 构造完整 `updateNewMessage` 并回填 Users
+  - `messages.getHistory` 改为双向查询，双方可见会话历史
+  - Emoji/Archived Sticker RPC 返回合法空集合或明确错误
 - [ECHO-BUG-032] Session 使用 auth_key_id 选择错误导致预授权读取失败 (2026-02-05) ✅ 已解决
   - 症状：预授权阶段出现 Session 不存在/无法读取
   - 原因：Session 表以 auth_key_id 作为主键，但逻辑使用 permAuthKeyId 写入/读取
@@ -124,6 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ECHO-FEATURE-001](features/ECHO-FEATURE-001-gnet-v2-api-adaptation.md) - gnet v2 API 适配 (2026-02-02)
 
 ### Bug 修复 (Bug Fixes)
+- [ECHO-BUG-033](bugfixes/ECHO-BUG-033-updates-diff-and-history.md) - getDifference 回放缺失消息体 & 历史查询方向错误导致聊天转圈 (2026-02-05)
 - [ECHO-BUG-025](bugfixes/ECHO-BUG-025-pre-auth-rpc-whitelist.md) - Pre-Auth RPC 白名单机制 (2026-02-04) 🔴 P0
 - [ECHO-BUG-024](bugfixes/ECHO-BUG-024-gateway-rpc-response-not-sent.md) - Gateway RPC 响应发送逻辑缺失 (2026-02-04) ⏳ 部分解决
 

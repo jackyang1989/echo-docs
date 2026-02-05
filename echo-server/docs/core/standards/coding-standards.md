@@ -4,8 +4,8 @@
 
 本文件是工程落地规范，权威约束以以下文档为准：
 
-- 项目宪法：`/Users/jianouyang/Project/echo/AGENTS.md`
-- 权威约束清单：`/Users/jianouyang/Project/echo/echo-docs/docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md`
+- 必看项目宪法：`/Users/jianouyang/Project/echo/AGENTS.md`
+- 必看权威约束清单：`/Users/jianouyang/Project/echo/echo-docs/docs/planning/ECHO_AUTHORITY_CONSTRAINTS.md`
 - 执行方案：
   - Week 1-8：`/Users/jianouyang/Project/echo/ECHO执行方案-精简版.md`
   - Week 9-36：`/Users/jianouyang/Project/echo/ECHO_DEVELOPMENT_PLAN_V2.md`
