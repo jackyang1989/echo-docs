@@ -50,6 +50,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
 ### Fixed
+- [ECHO-BUG-029] AuthKey 删除后未正确处理导致客户端卡住 (2026-02-06) ✅ 已修复
+  - 修复退出登录后无法重新登录的问题
+  - 当 AuthKey 被删除后，服务端正确关闭连接
+  - 强制客户端重新进行 DH 握手
+  - 修改文件：`internal/gateway/server_gnet.go`
 - [ECHO-BUG-042] 接收方 updateNewMessage 的 peer_id 错误导致消息不可见/方向异常 (2026-02-06) 🟡 待验收
   - 修复接收方更新的 `peer_id`（应指向发送者）
   - 一次性修复历史 `update_log` 中错误的 `peer_id`
@@ -159,6 +164,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ECHO-FEATURE-001](features/ECHO-FEATURE-001-gnet-v2-api-adaptation.md) - gnet v2 API 适配 (2026-02-02)
 
 ### Bug 修复 (Bug Fixes)
+- [ECHO-BUG-029](bugfixes/ECHO-BUG-029-authkey-deletion-not-handled.md) - AuthKey 删除后未正确处理导致客户端卡住 (2026-02-06) ✅ 已修复
 - [ECHO-BUG-041](bugfixes/ECHO-BUG-041-settings-chat-folders-and-user-status.md) - Settings 页 Chat Folders 缺失 & 用户昵称显示为手机号 (2026-02-06)
 - [ECHO-BUG-033](bugfixes/ECHO-BUG-033-updates-diff-and-history.md) - getDifference 回放缺失消息体 & 历史查询方向错误导致聊天转圈 (2026-02-05)
 - [ECHO-BUG-025](bugfixes/ECHO-BUG-025-pre-auth-rpc-whitelist.md) - Pre-Auth RPC 白名单机制 (2026-02-04) 🔴 P0
