@@ -51,20 +51,46 @@
   - 将结果转换回 `TLDialog` 对象。
 - 移除了 `gateway` 包的自引用导入，修复了 Import Cycle 问题。
 
-## 4. 剩余范围 (Phase 1.2+)
+### 3.2 `messages.getPeerSettings`
+实现基于 `ContactService` 和 `Router` 编排。
 
-### messages.getPeerSettings
-- 需要在 `ContactsService` 中实现检查 `contacts` 和 `blocked` 表的逻辑。
+#### Repository 层
+- 复用现有的 `ContactRepository`。
+
+#### Service/API 层 (`internal/service/contacts/service.go`, `cmd/message/main.go`)
+- 暴露了 `GetContact`（单个查询）接口，支持 Gateway 进行细粒度的权限检查。
+
+#### Gateway 层
+- `ContactsClient` 增加了 `GetContact` 方法。
+- `RPCRouter` 实现了 `TLMessagesGetPeerSettings`：
+  - 自动识别用户/群组/频道。
+  - 对于用户 Peer，查询联系人状态。
+  - 动态设置 `AddContact` (非联系人为 true) 和 `ReportSpam`。
+  - 严禁 Mock：通过真实查询判断状态。
+
+### 3.3 `messages.getMessages`
+实现消息内容和发送者信息的完整获取。
+
+#### Service/API 层
+- 复用了现有的 `/message/getMessages` API (MessageService) 和 `/user/getUsers` API (UserService)。
+
+#### Gateway 层
+- `RPCRouter` 实现了 `TLMessagesGetMessages`：
+  - 处理 `Vector<InputMessageID>` 输入。
+  - 调用 `MessageClient.GetMessages` 获取消息体。
+  - **Data Hydration**: 从消息中提取 `FromID` 和 `PeerID`，并调用 `UserClient.GetUsers` 批量获取 `UserData`。
+  - 组装 `Messages_MessagesSlice`，确保 UI 能显示发送者头像和名称。
+
+## 4. 剩余范围 (Phase 1.2+)
 
 ### 其他 RPC
 - `messages.getPinnedDialogs`
-- `messages.getMessages`
 - `account.getGlobalPrivacySettings`
 
 ## 5. 验证 (Verification)
 
-- **编译检查**: 通过 `go build ./cmd/gateway/main.go` 和 `go build ./cmd/message/main.go` 验证通过。
-- **逻辑检查**: 代码路径遵循 `RPC -> Gateway -> MessageClient -> MessageService -> DialogRepo -> DB` 的标准流程。
+- **编译检查**: 验证通过。
+- **逻辑检查**: `messages.getMessages` 包含了数据补全（Hydration）步骤，优于单纯的数据透传。
 
 ## 6. 回滚计划 (Rollback Plan)
 
