@@ -50,6 +50,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
 ### Fixed
+- [ECHO-BUG-040] auth.sendCode/resendCode 响应类型/flags 不兼容 & account.updateStatus 未实现导致登录页弹错 (2026-02-05) 🟡 待验收
+  - Gateway 从 Auth 响应提取 `code_type/length/next_type/timeout`，构造带正确 flags 的 `auth.sentCode`
+  - `account.updateStatus` 返回 `boolTrue`，避免客户端弹 `METHOD_NOT_IMPL`
 - [ECHO-BUG-039] 消息更新二进制编码错误 & 实时推送解析不兼容 (2026-02-05) ✅ 已解决
   - Message 服务统一生成 TL 二进制更新并写入 update_log（含发送者）
   - PushHandler 兼容 TL binary 与 legacy JSON，避免实时更新丢失
