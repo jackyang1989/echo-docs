@@ -15,8 +15,9 @@
 ## 🔍 根因分析
 
 1. **已登录 AuthKey 未恢复授权状态**
-   - 只有 `permAuthKeyId != 0` 时才尝试恢复 `user_id` 绑定。
+   - 只在 `permAuthKeyId != 0` 时尝试恢复 `user_id` 绑定。
    - 正常永久 AuthKey 的 `permAuthKeyId` 为 0，导致恢复逻辑被跳过。
+   - `bindAuthorizedSession` 也优先用 `permAuthKeyId`，与实际连接的 `auth_key_id` 不一致时绑定失败。
 
 2. **TLGetFutureSalts 被封装后未进入 Pre-Auth 处理**
    - `invokeWithLayer/initConnection` 内部的 `get_future_salts` 被路由到 `rpcRouter`，未实现处理，导致客户端反复提示缺少 salts。
@@ -27,12 +28,15 @@
 ## 🛠 修复方案
 
 1. **恢复授权逻辑不依赖 permAuthKeyId**
-   - 只要 AuthKey 存在，均尝试基于 `auth_key_id` 恢复已授权用户。
+   - 优先基于当前连接的 `auth_key_id` 恢复授权，必要时回退到 `perm_auth_key_id`。
 
-2. **在 Pre-Auth 中处理封装的 get_future_salts**
+2. **绑定时使用当前连接的 auth_key_id**
+   - `bindAuthorizedSession` 以当前连接使用的 `auth_key_id` 作为主键，避免绑定到错误 key。
+
+3. **在 Pre-Auth 中处理封装的 get_future_salts**
    - 对 `invokeWithLayer/initConnection` 内部的 `TLGetFutureSalts` 做直接处理，确保 salts 可用。
 
-3. **Pre-Auth 阶段静默处理 AUTH_KEY_UNREGISTERED**
+4. **Pre-Auth 阶段静默处理 AUTH_KEY_UNREGISTERED**
    - 登录前不返回该错误，避免登录页弹窗。
 
 ## ✅ 影响范围
