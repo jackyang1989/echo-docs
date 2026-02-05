@@ -50,6 +50,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
 ### Fixed
+- [ECHO-BUG-042] 接收方 updateNewMessage 的 peer_id 错误导致消息不可见/方向异常 (2026-02-06) 🟡 待验收
+  - 修复接收方更新的 `peer_id`（应指向发送者）
+  - 一次性修复历史 `update_log` 中错误的 `peer_id`
 - [ECHO-BUG-041] Settings 页 Chat Folders 缺失 & 用户昵称显示为手机号 (2026-02-06) ✅ 已解决
   - 实现 `messages.getDialogFilters` (兼容两版本后缀) 激活 Chat Folders 入口
   - 增强 `User` 对象构造，填充 `Status` 字段，修复昵称显示降级问题
