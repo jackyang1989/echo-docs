@@ -50,6 +50,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改 MinIO 端口为 9010/9011 避免冲突
 
 ### Fixed
+- [ECHO-BUG-043] Gateway 层级钳制缺失导致响应对象空编码 & rpc_error seqno 为 0 (2026-02-06) 🟡 待验收
+  - `invokeWithLayer`/Pre-Auth 统一钳制到 Layer 221，避免 `GetClazzID` 返回 0 造成空编码
+  - `rpc_error` 响应使用正确的 msg_id/seqno（content-related）
+  - 增加 Gateway 契约测试验证 unsupported layer 会写空
 - [ECHO-BUG-029] AuthKey 删除后未正确处理导致客户端卡住 (2026-02-06) ✅ 已修复
   - 修复退出登录后无法重新登录的问题
   - 当 AuthKey 被删除后，服务端正确关闭连接
@@ -164,6 +168,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ECHO-FEATURE-001](features/ECHO-FEATURE-001-gnet-v2-api-adaptation.md) - gnet v2 API 适配 (2026-02-02)
 
 ### Bug 修复 (Bug Fixes)
+- [ECHO-BUG-043](bugfixes/ECHO-BUG-043-gateway-layer-clamp-and-rpc-error-seqno.md) - Gateway 层级钳制缺失导致响应对象空编码 & rpc_error seqno 为 0 (2026-02-06)
 - [ECHO-BUG-029](bugfixes/ECHO-BUG-029-authkey-deletion-not-handled.md) - AuthKey 删除后未正确处理导致客户端卡住 (2026-02-06) ✅ 已修复
 - [ECHO-BUG-041](bugfixes/ECHO-BUG-041-settings-chat-folders-and-user-status.md) - Settings 页 Chat Folders 缺失 & 用户昵称显示为手机号 (2026-02-06)
 - [ECHO-BUG-033](bugfixes/ECHO-BUG-033-updates-diff-and-history.md) - getDifference 回放缺失消息体 & 历史查询方向错误导致聊天转圈 (2026-02-05)
@@ -178,6 +183,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-**最后更新**: 2026-02-02  
+**最后更新**: 2026-02-06  
 **当前版本**: 0.1.0 (Week 1 完成)  
 **下一版本**: 0.2.0 (Week 2 - 业务层实现)
