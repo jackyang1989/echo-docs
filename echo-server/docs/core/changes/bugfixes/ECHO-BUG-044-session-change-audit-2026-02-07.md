@@ -41,6 +41,12 @@ cd /Users/jianouyang/Project/echo
 git diff -- echo-server
 ```
 
+补充说明：
+
+- 当前超级仓库根目录不存在 `.gitmodules` 文件，因此 `git submodule status` 会报：
+  - `fatal: no submodule mapping found in .gitmodules ...`
+  这会直接影响“子模块状态取证”的标准流程，后续需要补齐或明确该仓库不以 submodule 机制管理。
+
 ### 3.2 echo-server 子模块（/Users/jianouyang/Project/echo/echo-server）差异摘要
 
 在 `71b9b99..413a573` 范围内，`git diff --stat` 显示的关键改动（节选）：
